@@ -156,98 +156,31 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage
 
 # System prompt for Lotus Electronics chatbot
-SYSTEM_PROMPT = """You are the official Lotus Electronics chatbot, an AI assistant representing Lotus Electronics - a leading electronics retailer in India. Your role is to help customers find the perfect electronic products and provide excellent customer service.
+SYSTEM_PROMPT = """You are the Lotus Electronics chatbot - an official AI assistant for India's leading electronics retailer.
 
-BRAND IDENTITY:
-- You represent Lotus Electronics exclusively
-- Always maintain a professional, friendly, and helpful tone
-- Focus on electronics products available in the Lotus Electronics catalog
-- Provide accurate product information and recommendations
+TOOL USAGE RULES:
+- Use search_products for ANY electronics query (smartphones, TVs, laptops, ACs, etc.) or price mentions
+- Skip search_products only for: greetings, thank you, math questions, or casual chat like "okay", "hmm"
+- For price-only queries ("under 15k"), use conversation history to determine product category
 
-CRITICAL TOOL USAGE RULES - MANDATORY:
-- ALWAYS use the search_products tool when customers mention ANY electronic products, brands, categories, or price ranges
-- This includes: smartphones, phones, mobiles, laptops, TVs, ACs, refrigerators, headphones, speakers, tablets, cameras, etc.
-- Even if asking for products under/over a price range, ALWAYS call search_products first
-- Examples requiring search_products: "smartphones under 25k", "show me phones", "Samsung mobiles", "laptops", "gaming headphones", "AC under 50000", "iPhone", "Android phones", "above 15k", "under 50k", "between 20-30k"
-- PRICE QUERIES: Any mention of price ranges like "above 15k", "under 50k", "between X-Y" MUST trigger search_products
-- Only skip search_products for: greetings ("hello", "hi"), math problems ("what is 2+6"), generic questions ("how are you"), thank you messages
-- When in doubt about whether to search, ALWAYS search - it's better to search and find nothing than to miss helping a customer
-- NEVER respond to price or product queries without calling search_products first
+CONTEXT AWARENESS:
+- Track conversation context for price-only queries
+- Example: User asked about "smartphones" → later says "above 20k" → search "smartphones" with price_min=20000
 
-CONVERSATION CONTEXT AWARENESS - MANDATORY TOOL CALLING:
-- ALWAYS analyze the conversation history to understand what product category the customer is currently interested in
-- If customer says "under 10k", "above 15k", "above 45k", "between 20-30k" etc., check previous messages to determine the product category
-- ANY PRICE MENTION REQUIRES IMMEDIATE search_products TOOL CALL - NO EXCEPTIONS
-- Combine the context with current query for search based on the LAST DISCUSSED PRODUCT CATEGORY
-- Context Examples (ALL REQUIRE search_products TOOL CALL):
-  * Previous: "smartphones" → Current: "above 45k" → MUST call search_products: "smartphones" with price_min=45000
-  * Previous: "laptops" → Current: "under 50k" → MUST call search_products: "laptops" with price_max=50000
-  * Previous: "ACs" → Current: "above 30k" → MUST call search_products: "ACs" with price_min=30000
-  * Previous: "headphones" → Current: "under 5k" → MUST call search_products: "headphones" with price_max=5000
-  * Previous: "TVs" → Current: "between 20-40k" → MUST call search_products: "TVs" with price_min=20000, price_max=40000
-  * Previous: "smartphones under 10000" → Current: "above 15k" → MUST call search_products: "smartphones" with price_min=15000
-- Always maintain continuity in product category discussions for ALL electronics categories
-- Work with ANY product type: smartphones, laptops, TVs, ACs, refrigerators, headphones, speakers, tablets, cameras, etc.
-- CRITICAL: Price queries without explicit product mention MUST use conversation context + search_products tool
-
-MANDATORY SEARCH BEHAVIOR - NO EXCEPTIONS:
-- For ANY product query, call search_products with appropriate parameters - THIS IS MANDATORY
-- For ANY price query (above/under/between X amount), call search_products - THIS IS MANDATORY  
-- Use price_min and price_max when customers mention price ranges
-- Extract the main product category/brand from user queries AND conversation history for the search
-- If no products found, inform the customer and suggest alternatives
-- When user mentions only price (like "under 10k", "above 15k", "above 45k"), infer product category from recent conversation context
-- This works for ALL electronics: smartphones, laptops, TVs, ACs, refrigerators, headphones, speakers, tablets, cameras, washing machines, microwaves, etc.
-- Context inheritance applies to ANY product category the customer was previously discussing
-- CRITICAL RULE: If you see ANY price mentioned (15k, 45k, 50k, etc.), you MUST call search_products
-- NEVER provide direct responses to price queries without calling search_products first
-
-RESPONSE FORMAT (Mandatory - Always respond in this exact JSON format):
+RESPONSE FORMAT:
 {
-  "answer": "your natural text reply to the user as Lotus Electronics chatbot",
-  "products": [
-    {
-      "product_name": "Product Name",
-      "product_mrp": "Price in ₹",
-      "product_url": "Product Page URL",
-      "product_image": "Image URL",
-      "features": ["Feature 1", "Feature 2", "Feature 3"]
-    }
-  ],
-  "end": "Ask a relevant follow-up question if needed"
+  "answer": "friendly response as Lotus Electronics chatbot",
+  "products": [{"product_name": "Name", "product_mrp": "₹Price", "product_url": "URL", "product_image": "Image", "features": ["Feature1", "Feature2"]}],
+  "end": "follow-up question if relevant"
 }
 
-STEP-BY-STEP PROCESS FOR PRODUCT QUERIES:
-1. User asks about electronics → IMMEDIATELY call search_products tool
-2. The search_products tool will return formatted JSON results directly
-3. ALWAYS accept and use the tool results as your final response
-4. Do NOT modify or reformat the tool results - they are already properly formatted
-5. Simply return the JSON results from the search_products tool as-is
+ACKNOWLEDGMENT RESPONSES:
+For casual responses like "okay", "hmm", "thanks" - provide friendly conversational replies without calling search_products.
 
-CRITICAL TOOL RESULT HANDLING:
-- When search_products tool returns results, use them EXACTLY as provided
-- The tool results are already in the correct JSON format with products array
-- Do NOT call search_products twice for the same query
-- Do NOT try to reformat or modify the tool results
-- The tool handles all formatting, product details, and JSON structure
-
-CRITICAL FORMATTING RULES:
-1. The search_products tool returns results in the correct JSON format already
-2. When you receive tool results, use them EXACTLY as provided - do not modify them
-3. Do NOT wrap tool results in additional JSON or markdown formatting
-4. Do NOT call search_products multiple times for the same query
-5. The tool handles all product formatting, pricing, and JSON structure
-6. Tool results are already properly formatted responses ready for the user
-7. Accept tool results as your final answer without further processing
-8. If the tool returns "no products found", accept that result as-is
-
-TOOL CALLING PRIORITY: 
-- Product queries = ALWAYS call search_products first
-- Non-product queries = Respond directly without tools
-
-IMPORTANT: Your response must be a single, flat JSON object. Do not create nested JSON or put JSON strings inside other JSON fields.
-
-Remember: You are the official Lotus Electronics customer service chatbot. Be professional, helpful, and focus on electronics products. RESPOND ONLY IN PURE JSON FORMAT."""
+KEY POINTS:
+- search_products has return_direct=True - its output is final, no further processing
+- Always respond in JSON format
+- Be helpful and professional representing Lotus Electronics"""
 
 # Create LLM class
 llm = ChatGoogleGenerativeAI(
@@ -374,11 +307,30 @@ def call_model(
 # Define the conditional edge that determines whether to continue or not
 def should_continue(state: AgentState):
     messages = state["messages"]
-    # If the last message is not a tool call, then we finish
-    if not messages[-1].tool_calls:
+    last_message = messages[-1]
+    
+    # Debug: show what type of message we're evaluating
+    print(f"🔍 Evaluating message type: {getattr(last_message, 'type', 'unknown')}")
+    
+    # If called after LLM node and the last message has tool_calls, continue to tools
+    if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+        print("🔄 AI made tool calls - continuing to tool execution...")
+        return "continue"
+    
+    # If called after tools node and the last message is a tool result, END here
+    # This is critical for return_direct=True behavior
+    if hasattr(last_message, 'type') and last_message.type == 'tool':
+        print("🏁 Tool execution complete - ending conversation (return_direct)")
         return "end"
-    # default to continue
-    return "continue"
+        
+    # If the last message is an AI message without tool calls, end
+    if hasattr(last_message, 'type') and last_message.type == 'ai' and not hasattr(last_message, 'tool_calls'):
+        print("🏁 AI response without tools - ending conversation")
+        return "end"
+    
+    # Default fallback - end conversation
+    print("🏁 Default case - ending conversation")
+    return "end"
 
 
 from langgraph.graph import StateGraph, END
@@ -406,8 +358,20 @@ workflow.add_conditional_edges(
         "end": END,
     },
 )
-# 4. Add a normal edge after `tools` is called, `llm` node is called next.
-workflow.add_edge("tools", "llm")
+# 4. Add a conditional edge after `tools` is called to handle return_direct properly
+workflow.add_conditional_edges(
+    # Edge is used after the `tools` node is called.
+    "tools",
+    # The function that will determine what happens after tool execution
+    should_continue,
+    # For search_products with return_direct=True, we should end after tool execution
+    {
+        # If the tool has return_direct=True, we end here
+        "end": END,
+        # Otherwise continue to llm for further processing
+        "continue": "llm",
+    },
+)
 
 # Add checkpointing for better state management and recovery
 from langgraph.checkpoint.memory import MemorySaver
@@ -492,7 +456,13 @@ def chat_with_agent(message: str, session_id: str = "default_session") -> str:
             if "messages" in state and state["messages"]:
                 last_message = state["messages"][-1]
                 if hasattr(last_message, 'content') and hasattr(last_message, 'type'):
-                    if last_message.type == 'ai' and last_message.content:
+                    # For return_direct=True tools, accept tool message results
+                    if last_message.type == 'tool' and last_message.content:
+                        print(f"🎯 Got tool result (return_direct): {len(last_message.content)} chars")
+                        final_response = last_message.content
+                        break  # Tool results are final with return_direct=True
+                    elif last_message.type == 'ai' and last_message.content:
+                        print(f"🤖 Got AI response: {len(last_message.content)} chars")
                         final_response = last_message.content
         
         # Clean and validate the response
