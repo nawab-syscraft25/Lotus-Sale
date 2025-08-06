@@ -1,0 +1,32 @@
+# Chat Application with Redis Memory and Product Search
+# Core dependencies
+redis>=5.0.0
+uuid
+langchain>=0.1.0
+langchain-core>=0.1.0
+langchain-google-genai>=0.1.0
+langchain-tavily>=0.1.0
+langgraph>=0.1.0
+
+# Product Search Dependencies
+sentence-transformers>=2.2.0
+pinecone-client>=3.0.0
+transformers>=4.20.0
+torch>=1.12.0
+
+# Weather and Location Dependencies
+geopy>=2.3.0
+requests>=2.28.0
+
+# Data Processing
+pydantic>=2.0.0
+typing-extensions>=4.5.0
+
+# Development and Testing
+tqdm>=4.64.0
+jupyter>=1.0.0
+notebook>=6.5.0
+
+# Optional: For better performance
+numpy>=1.24.0
+pandas>=1.5.0
