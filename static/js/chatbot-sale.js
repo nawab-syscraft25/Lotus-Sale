@@ -186,6 +186,130 @@ class ChatBot {
         this.scrollToBottom();
     }
 
+    addProductDetailsCard(productDetails) {
+        // Check if productDetails has meaningful content
+        if (!productDetails || Object.keys(productDetails).length === 0) {
+            return; // Don't show card for empty object
+        }
+        
+        // Check if it has essential product information
+        if (!productDetails.product_name && !productDetails.product_id) {
+            return; // Don't show card without basic product info
+        }
+        
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'product-details-card fade-in';
+        
+        const product = productDetails;
+        const productName = product.product_name || 'Product Details';
+        const price = product.product_mrp || 'Price not available';
+        const imageUrl = product.product_image || '';
+        const inStock = product.instock || 'Unknown';
+        const description = product.meta_desc || '';
+        
+        // Handle specifications - show top 5 specs and prioritize warranty
+        let specificationsHtml = '';
+        if (product.product_specification && Array.isArray(product.product_specification)) {
+            let specs = [...product.product_specification];
+            
+            // Look for warranty in specs and prioritize it
+            const warrantyIndex = specs.findIndex(spec => 
+                spec.fkey && spec.fkey.toLowerCase().includes('warranty')
+            );
+            
+            if (warrantyIndex !== -1) {
+                // Move warranty to the front
+                const warranty = specs.splice(warrantyIndex, 1)[0];
+                specs.unshift(warranty);
+            }
+            
+            // Take only top 5 specifications
+            const topSpecs = specs.slice(0, 5);
+            
+            specificationsHtml = `
+                <div class="specifications mb-3">
+                    <h6 class="text-primary mb-2">
+                        <i class="fas fa-list-check me-1"></i>Key Specifications
+                    </h6>
+                    <div class="row">
+                        ${topSpecs.map(spec => `
+                            <div class="col-12 mb-1">
+                                <small class="text-muted">${spec.fkey}:</small>
+                                <span class="fw-bold ms-1">${spec.fvalue}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Handle delivery options
+        let deliveryHtml = '';
+        if (product.del) {
+            deliveryHtml = `
+                <div class="delivery-options mb-3">
+                    <h6 class="text-success mb-2">
+                        <i class="fas fa-truck me-1"></i>Delivery Options
+                    </h6>
+                    ${product.del.std ? `<p class="mb-1"><i class="fas fa-box me-1 text-info"></i><small>${product.del.std}</small></p>` : ''}
+                    ${product.del.t3h ? `<p class="mb-1"><i class="fas fa-bolt me-1 text-warning"></i><small>${product.del.t3h}</small></p>` : ''}
+                    ${product.del.stp ? `<p class="mb-1"><i class="fas fa-store me-1 text-primary"></i><small>${product.del.stp}</small></p>` : ''}
+                </div>
+            `;
+        }
+
+        cardDiv.innerHTML = `
+            <div class="card mb-3 shadow border product-detail-card">
+                <div class="card-header bg-primary text-white py-2">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Product Details
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <img src="${imageUrl}" alt="${productName}" class="img-fluid rounded shadow-sm" style="max-height: 200px;" onerror="this.style.display='none'" />
+                            <div class="mt-2">
+                                <span class="badge ${inStock.toLowerCase() === 'yes' ? 'bg-success' : 'bg-warning'} px-3">
+                                    <i class="fas fa-${inStock.toLowerCase() === 'yes' ? 'check' : 'clock'} me-1"></i>
+                                    ${inStock.toLowerCase() === 'yes' ? 'In Stock' : 'Check Availability'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <h5 class="card-title text-dark mb-2">${productName}</h5>
+                            <h4 class="text-success fw-bold mb-3">₹${price}</h4>
+                        </div>
+                        <div>
+                        ${specificationsHtml}
+                        ${deliveryHtml}
+                        ${description ? `
+                                <div class="description mb-3">
+                                    <h6 class="text-secondary mb-2">
+                                        <i class="fas fa-file-alt me-1"></i>Description
+                                    </h6>
+                                    <p class="text-muted small">${description.length > 150 ? description.substring(0, 150) + '...' : description}</p>
+                                </div>
+                            ` : ''}
+                            
+                            <div class="action-buttons">
+                                <button class="btn btn-primary me-2" onclick="window.open('https://www.lotuselectronics.com/product/${product.uri_slug || ''}/${product.product_id || ''}', '_blank')">
+                                    <i class="fas fa-shopping-cart me-1"></i>Buy Now
+                                </button>
+                                <button class="btn btn-outline-success" onclick="window.open('tel:0731-4265577', '_self')">
+                                    <i class="fas fa-phone me-1"></i>Call for Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        this.chatMessages.appendChild(cardDiv);
+        this.scrollToBottom();
+    }
+
     addStoreCard(store) {
         const cardDiv = document.createElement('div');
         cardDiv.className = 'store-card fade-in';
@@ -301,6 +425,7 @@ class ChatBot {
                 if (data.status === "success" || data.status === "partial" && data.data) {
                     let answer = data.data.answer;
                     const products = data.data.products;
+                    const productDetails = data.data.product_details;
                     const stores = data.data.stores;
                     const comparison = data.data.comparison;
                     const end = data.data.end;
@@ -339,6 +464,12 @@ class ChatBot {
                     if (answer) this.addMessage(answer, 'bot');
                     if (products && Array.isArray(products)) {
                         products.forEach(product => this.addProductCard(product));
+                    }
+                    if (productDetails && Array.isArray(productDetails)) {
+                        productDetails.forEach(details => this.addProductDetailsCard(details));
+                    } else if (productDetails && typeof productDetails === 'object' && Object.keys(productDetails).length > 0) {
+                        // Handle single product detail object - only if it has content
+                        this.addProductDetailsCard(productDetails);
                     }
                     if (stores && Array.isArray(stores)) {
                         stores.forEach(store => this.addStoreCard(store));

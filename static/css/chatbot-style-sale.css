@@ -211,7 +211,7 @@
         padding: 20px;
         overflow-y: auto;
         scroll-behavior: smooth;
-        font-family: 'Math', 'Gill Sans', 'Trebuchet MS', sans-serif;
+        font-family: system-ui;
     }
 
     .chat-messages::-webkit-scrollbar {
@@ -644,6 +644,90 @@
 
 .store-card:hover {
     transform: scale(1.02);
+}
+
+.store-card .card {
+    border: 1px solid var(--border-color);
+}
+
+/* Product Details Card Styles */
+.product-details-card {
+    animation: fadeIn 0.5s ease-in;
+    margin: 12px 0;
+}
+
+.product-detail-card {
+    border: 2px solid var(--primary-color) !important;
+    box-shadow: 0 4px 12px rgba(32, 178, 170, 0.15);
+    transition: var(--transition);
+}
+
+.product-detail-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(32, 178, 170, 0.2);
+}
+
+.product-detail-card .card-header {
+    background: var(--primary-color) !important;
+    border-bottom: none;
+}
+
+.product-detail-card .specifications {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 3px solid var(--primary-color);
+}
+
+.product-detail-card .delivery-options {
+    background: #e8f5e8;
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 3px solid #28a745;
+}
+
+.product-detail-card .description {
+    background: #f0f7ff;
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 3px solid #007bff;
+}
+
+.product-detail-card .action-buttons .btn {
+    min-width: 120px;
+    font-weight: 600;
+}
+
+.product-detail-card .badge {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+}
+
+.product-detail-card img {
+    border: 2px solid #f1f3f4;
+    transition: var(--transition);
+}
+
+.product-detail-card img:hover {
+    border-color: var(--primary-color);
+    transform: scale(1.02);
+}
+
+@media (max-width: 768px) {
+    .product-detail-card .col-md-4,
+    .product-detail-card .col-md-8 {
+        text-align: center;
+    }
+    
+    .product-detail-card .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .product-detail-card .action-buttons .btn {
+        width: 100%;
+    }
 }
 
 .store-card .card {

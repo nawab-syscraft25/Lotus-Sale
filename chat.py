@@ -198,12 +198,14 @@ class SearchInput(BaseModel):
 from tools.product_search_tool import search_products
 # Import the store location tool
 from tools.get_nearby_store import get_near_store
+# Import the product details tool
+from tools.Product_details import get_filtered_product_details_tool
     
 # from langchain_tavily import TavilySearch
 
 # tavily_tool = TavilySearch(max_results=2,tavily_api_key=tavily_api_key)
 
-tools = [search_products, get_near_store]
+tools = [search_products, get_near_store, get_filtered_product_details_tool]
 
 from datetime import datetime
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -212,45 +214,87 @@ from langchain_core.messages import SystemMessage
 # System prompt for Lotus Electronics chatbot
 SYSTEM_PROMPT = """You are Lotus Electronics Sales Assistant - helping customers find electronics products and store locations in India.
 
+CRITICAL RESPONSE FORMAT REQUIREMENT:
+You MUST respond with EXACTLY this JSON structure - NO nested JSON strings, NO escaped quotes, NO additional wrapping:
+
+{
+  "answer": "your conversational response only - NO product details or store details here",
+  "products": [array of product objects if search_products was used],
+  "product_details": {product object if get_filtered_product_details_tool was used},
+  "stores": [array of store objects if get_near_store was used],
+  "end": "follow-up question to continue conversation"
+}
+
 TOOL USAGE RULES:
 1. Use search_products ONLY when user asks for NEW products they haven't seen yet
 2. Use get_near_store ONLY when user asks about store locations by city or zipcode
-3. DON'T use tools when discussing products/stores already shown
+3. Use get_filtered_product_details_tool when user wants MORE DETAILS about a specific product from previous results (extract product_id from conversation context)
+4. DON'T use tools when discussing general product info that doesn't need specific details
 
-RESPONSE FORMAT - ALWAYS respond with this JSON structure:
-{
-  "answer": "your conversational response only - NO product details or store details here",
-  "products": [product objects if search_products was used],
-  "stores": [store objects if get_near_store was used],
-  "end": "follow-up question to continue conversation"
-}
+IMPORTANT: When user refers to a specific product from previous search results (like "tell me more about that Samsung phone"), you MUST:
+- Extract the product_id from the previous search results in conversation context
+- Use the product_id with get_filtered_product_details_tool
+- Use user's city preference for accurate stock information
+
+CRITICAL JSON RESPONSE RULES:
+❌ NEVER create nested JSON strings inside JSON
+❌ NEVER wrap responses in additional data objects
+❌ NEVER escape quotes in JSON values
+❌ NEVER put JSON as string values
+✅ Return clean, direct JSON structure
+✅ Put actual objects/arrays in fields, not strings
 
 CRITICAL ANSWER FIELD RULES:
 ❌ NEVER put product names, prices, or specs in "answer"
 ❌ NEVER put store names, addresses, or timings in "answer"
+❌ NEVER put detailed product specifications in "answer"
 ✅ Only put conversational guidance and insights in "answer"
 
-EXAMPLES:
+EXAMPLES OF CORRECT RESPONSES:
 When user asks "show me phones":
-✅ CORRECT: {"answer": "I found some great smartphones for you! These offer excellent value and modern features.", "products": [...], "end": "What's your budget range?"}
-❌ WRONG: {"answer": "Here are phones: Samsung A36 5G at ₹30,999...", "products": [...]}
+{
+  "answer": "I found some great smartphones for you! These offer excellent value and modern features.",
+  "products": [{"product_id": "123", "product_name": "Samsung Galaxy A36", "product_mrp": "30999", ...}],
+  "stores": [],
+  "product_details": {},
+  "end": "What's your budget range?"
+}
+
+When user asks "tell me more about that Samsung phone" (referring to product_id from previous results):
+{
+  "answer": "Here are the complete specifications and availability details for that Samsung smartphone.",
+  "products": [],
+  "product_details": {"product_id": "123", "product_name": "Samsung Galaxy A36", "product_specification": [...], ...},
+  "stores": [],
+  "end": "Would you like to check availability at a nearby store?"
+}
 
 When user asks "find store in Delhi":
-✅ CORRECT: {"answer": "Perfect! I found several Lotus stores in Delhi where you can visit.", "stores": [...], "end": "Which area is most convenient for you?"}
-❌ WRONG: {"answer": "Here are stores: Lotus Store at CP, Address...", "stores": [...]}
+{
+  "answer": "Perfect! I found several Lotus stores in Delhi where you can visit.",
+  "products": [],
+  "product_details": {},
+  "stores": [{"store_name": "Lotus CP", "address": "Connaught Place", ...}],
+  "end": "Which area is most convenient for you?"
+}
 
 CONVERSATION INTELLIGENCE:
 - Remember what products/stores were already shown
-- When user says "tell me about that Samsung phone" - explain without new search
+- When user says "tell me more about that Samsung phone" - use get_filtered_product_details_tool with the product_id
 - When user says "what about the store timings" - answer from previous store results
 - Track user preferences (budget, brands, features) across conversation
+- Extract product_id from previous search results when user asks for specific product details
+- Always use the user's city preference for stock availability when getting product details
 
 SALES APPROACH:
 - Be helpful and conversational
 - Guide users toward purchase decisions
 - Suggest visiting stores for hands-on experience
 - Ask relevant follow-up questions
-- Focus on customer needs and value"""
+- Focus on customer needs and value
+- Highlight stock availability and delivery options
+
+REMEMBER: Return ONLY the JSON structure above. NO additional text, NO markdown formatting, NO nested JSON strings."""
 
 # Create LLM class
 llm = ChatGoogleGenerativeAI(
@@ -261,7 +305,7 @@ llm = ChatGoogleGenerativeAI(
 )
 
 # Bind tools to the model
-model = llm.bind_tools([search_products, get_near_store])
+model = llm.bind_tools([search_products, get_near_store, get_filtered_product_details_tool])
 
 # Test the model with tools
 # res=model.invoke(f"What is the weather in Berlin on {datetime.today()}?")
@@ -550,21 +594,74 @@ def chat_with_agent(message: str, session_id: str = "default_session") -> str:
             try:
                 # Check if it's already valid JSON
                 parsed_json = json.loads(clean_response)
+                print(f"🔧 Initial parsing successful. Keys: {list(parsed_json.keys()) if isinstance(parsed_json, dict) else 'Not a dict'}")
                 
-                # Check if the answer field contains nested JSON (common AI model issue)
-                if 'answer' in parsed_json and isinstance(parsed_json['answer'], str):
-                    try:
-                        # Try to parse the answer as JSON
-                        nested_json = json.loads(parsed_json['answer'])
-                        if isinstance(nested_json, dict) and 'data' in nested_json:
-                            # Extract the actual data from nested structure
-                            actual_data = nested_json['data']
-                            if isinstance(actual_data, dict) and 'answer' in actual_data:
-                                # Replace the original response with the properly structured data
-                                parsed_json = actual_data
-                    except (json.JSONDecodeError, TypeError):
-                        # If answer isn't JSON, keep original structure
-                        pass
+                # Handle deeply nested JSON structure from data.answer field
+                def parse_nested_structure(data_dict):
+                    """Recursively parse nested JSON structures and product details output"""
+                    if isinstance(data_dict, dict):
+                        # Check for data.answer structure first (most complex nesting)
+                        if 'data' in data_dict and isinstance(data_dict['data'], dict):
+                            data_content = data_dict['data']
+                            if 'answer' in data_content and isinstance(data_content['answer'], str):
+                                try:
+                                    # Parse the nested JSON in data.answer
+                                    nested_json = json.loads(data_content['answer'])
+                                    if isinstance(nested_json, dict):
+                                        # Recursively process any further nesting
+                                        nested_json = parse_nested_structure(nested_json)
+                                        return nested_json
+                                except (json.JSONDecodeError, TypeError) as e:
+                                    print(f"🔧 Failed to parse data.answer as JSON: {e}")
+                            # If data.answer parsing fails, return the data content
+                            return data_content
+                        
+                        # Check for direct answer field with nested JSON
+                        if 'answer' in data_dict and isinstance(data_dict['answer'], str):
+                            try:
+                                # Try to parse answer as JSON first
+                                nested_json = json.loads(data_dict['answer'])
+                                if isinstance(nested_json, dict):
+                                    # Recursively process the nested JSON
+                                    nested_json = parse_nested_structure(nested_json)
+                                    return nested_json
+                            except (json.JSONDecodeError, TypeError) as e:
+                                print(f"🔧 Failed to parse direct answer as JSON: {e}")
+                        
+                        # Process product_details output field if present at any level
+                        if 'product_details' in data_dict and isinstance(data_dict['product_details'], dict):
+                            if 'output' in data_dict['product_details']:
+                                try:
+                                    import ast
+                                    output_str = data_dict['product_details']['output']
+                                    print(f"🔧 Parsing product_details output: {output_str[:100]}...")
+                                    product_details_obj = ast.literal_eval(output_str)
+                                    data_dict['product_details'] = product_details_obj
+                                    print(f"✅ Successfully parsed product details")
+                                except (ValueError, SyntaxError) as e:
+                                    print(f"❌ Error parsing product details output: {e}")
+                                    # If parsing fails, keep the original structure
+                                    pass
+                    
+                    return data_dict
+                
+                # Apply nested structure parsing
+                print(f"🔧 Original response structure: {list(parsed_json.keys()) if isinstance(parsed_json, dict) else type(parsed_json)}")
+                parsed_json = parse_nested_structure(parsed_json)
+                print(f"🔧 Final response structure: {list(parsed_json.keys()) if isinstance(parsed_json, dict) else type(parsed_json)}")
+                
+                # Ensure we have the expected structure - if it's missing top-level fields, try to extract them
+                if isinstance(parsed_json, dict):
+                    # If we don't have expected keys, the LLM might have wrapped everything in a data field
+                    expected_keys = {'answer', 'products', 'product_details', 'stores', 'end'}
+                    current_keys = set(parsed_json.keys())
+                    
+                    if not any(key in current_keys for key in expected_keys):
+                        print("⚠️  Response doesn't have expected structure. Trying to extract from nested fields...")
+                        # Try to find the actual response structure in nested fields
+                        if 'data' in parsed_json:
+                            parsed_json = parsed_json['data']
+                            print(f"🔧 Extracted from data field. New keys: {list(parsed_json.keys())}")
                 
                 # Return properly formatted JSON
                 return json.dumps(parsed_json, ensure_ascii=False, indent=2)
@@ -578,16 +675,8 @@ def chat_with_agent(message: str, session_id: str = "default_session") -> str:
                         extracted_json = json_match.group(0)
                         parsed_json = json.loads(extracted_json)
                         
-                        # Check for nested JSON in extracted content too
-                        if 'answer' in parsed_json and isinstance(parsed_json['answer'], str):
-                            try:
-                                nested_json = json.loads(parsed_json['answer'])
-                                if isinstance(nested_json, dict) and 'data' in nested_json:
-                                    actual_data = nested_json['data']
-                                    if isinstance(actual_data, dict) and 'answer' in actual_data:
-                                        parsed_json = actual_data
-                            except (json.JSONDecodeError, TypeError):
-                                pass
+                        # Apply the same nested structure parsing to extracted JSON
+                        parsed_json = parse_nested_structure(parsed_json)
                         
                         return json.dumps(parsed_json, ensure_ascii=False, indent=2)
                     except:
@@ -639,6 +728,7 @@ if __name__ == "__main__":
     print("\n💡 Available commands:")
     print("   • Ask about any electronics products")
     print("   • Ask about store locations ('find store in [city]')")
+    print("   • Ask for product details ('tell me more about that Samsung phone')")
     print("   • 'stats' - View your conversation stats")  
     print("   • 'clear' - Clear conversation history")
     print("   • 'quit'/'exit'/'bye' - End conversation")
@@ -646,6 +736,7 @@ if __name__ == "__main__":
     print("   • 'Show me Samsung ACs under 50000'")
     print("   • 'Find gaming laptops between 60000 and 100000'")
     print("   • 'I need wireless headphones'")
+    print("   • 'Tell me more about that iPhone' (after seeing product list)")
     print("   • 'Find store in Indore'")
     print("   • 'Show me stores near 452001'")
     print("-"*60)
@@ -694,6 +785,54 @@ if __name__ == "__main__":
                         if product.get('product_url'):
                             print(f"   🔗 URL: {product['product_url']}")
                 
+                if 'product_details' in parsed_json and parsed_json['product_details']:
+                    details = parsed_json['product_details']
+                    print(f"\n🔍 Product Details:")
+                    print(f"📱 {details.get('product_name', 'N/A')}")
+                    print(f"💰 Price: ₹{details.get('product_mrp', 'N/A')}")
+                    print(f"📦 SKU: {details.get('product_sku', 'N/A')}")
+                    if details.get('instock'):
+                        stock_status = "✅ In Stock" if details['instock'].lower() == 'yes' else "❌ Out of Stock"
+                        print(f"📦 Stock: {stock_status}")
+                    
+                    # Display top 5 specifications with priority for warranty
+                    if details.get('product_specification') and isinstance(details['product_specification'], list):
+                        specs = details['product_specification']
+                        
+                        # Look for warranty and move to front
+                        warranty_spec = None
+                        filtered_specs = []
+                        for spec in specs:
+                            if isinstance(spec, dict) and spec.get('fkey') and 'warranty' in spec['fkey'].lower():
+                                warranty_spec = spec
+                            else:
+                                filtered_specs.append(spec)
+                        
+                        # Create final specs list with warranty first
+                        final_specs = []
+                        if warranty_spec:
+                            final_specs.append(warranty_spec)
+                        final_specs.extend(filtered_specs[:4] if warranty_spec else filtered_specs[:5])
+                        
+                        print(f"📋 Key Specifications:")
+                        for spec in final_specs:
+                            if isinstance(spec, dict) and spec.get('fkey') and spec.get('fvalue'):
+                                print(f"   • {spec['fkey']}: {spec['fvalue']}")
+                    
+                    if details.get('meta_desc'):
+                        desc = details['meta_desc'][:150] + "..." if len(details['meta_desc']) > 150 else details['meta_desc']
+                        print(f"📝 Description: {desc}")
+                    
+                    if details.get('del'):
+                        delivery = details['del']
+                        print(f"🚚 Delivery Options:")
+                        if delivery.get('std'):
+                            print(f"   • Standard: {delivery['std']}")
+                        if delivery.get('t3h'):
+                            print(f"   • Express: {delivery['t3h']}")
+                        if delivery.get('stp'):
+                            print(f"   • Store Pickup: {delivery['stp']}")
+                
                 if 'stores' in parsed_json and parsed_json['stores']:
                     print(f"\n🏪 Stores Found ({len(parsed_json['stores'])}):")
                     for i, store in enumerate(parsed_json['stores'], 1):
@@ -723,6 +862,23 @@ if __name__ == "__main__":
                                 print(f"   💰 Price: {product.get('product_mrp', 'N/A')}")
                                 if product.get('features'):
                                     print(f"   ✨ Features: {', '.join(product['features'][:2])}")
+                        
+                        if 'product_details' in parsed_json and parsed_json['product_details']:
+                            details = parsed_json['product_details']
+                            print(f"\n🔍 Product Details:")
+                            print(f"📱 {details.get('product_name', 'N/A')}")
+                            print(f"💰 Price: ₹{details.get('product_mrp', 'N/A')}")
+                            if details.get('instock'):
+                                stock_status = "✅ In Stock" if details['instock'].lower() == 'yes' else "❌ Out of Stock"
+                                print(f"📦 Stock: {stock_status}")
+                            
+                            # Display key specifications
+                            if details.get('product_specification') and isinstance(details['product_specification'], list):
+                                specs = details['product_specification'][:5]  # Top 5 specs
+                                print(f"📋 Key Specifications:")
+                                for spec in specs:
+                                    if isinstance(spec, dict) and spec.get('fkey') and spec.get('fvalue'):
+                                        print(f"   • {spec['fkey']}: {spec['fvalue']}")
                         
                         if 'stores' in parsed_json and parsed_json['stores']:
                             print(f"\n🏪 Stores Found ({len(parsed_json['stores'])}):")

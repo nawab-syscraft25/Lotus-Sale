@@ -197,11 +197,12 @@ class ProductSearchTool:
                     product_url = f"https://www.lotuselectronics.com/product/{product.get('url')}/{product_id}"
             
             products.append({
+                "product_id":product.get('product_id') or product.get('id', ''),
                 "product_name": product['product_name'],
                 "product_mrp": f"₹{product['price']:,.0f}",
                 "product_url": product_url,
                 "product_image": product.get('image_url', ''),
-                "features": features[:3]
+                "features": features[:4]
             })
         
         # Return raw product data for LLM to process intelligently
