@@ -97,7 +97,7 @@
         bottom: 30px;
         right: 105px;
         width: 450px;
-        height: 640px;
+        height: calc(100vh - 280px);
         /* top:10px;
         bottom: 10px; */
         background: white;
