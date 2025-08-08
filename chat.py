@@ -55,36 +55,48 @@ class RedisMemory:
     def get_user_messages(self, user_id: str) -> list:
         """Retrieve user's message history from Redis."""
         try:
+            # Test connection before attempting operation
+            self.redis_client.ping()
             key = f"user_messages:{user_id}"
             data = self.redis_client.get(key)
             if data:
                 return pickle.loads(data)
             return []
+        except redis.ConnectionError as e:
+            print(f"❌ Redis connection error for user {user_id}: {e}")
+            return []
         except Exception as e:
-            print(f"Error retrieving messages for user {user_id}: {e}")
+            print(f"❌ Error retrieving messages for user {user_id}: {type(e).__name__}: {e}")
             return []
     
     def save_user_messages(self, user_id: str, messages: list):
         """Save user's message history to Redis with TTL."""
         try:
+            # Test connection before attempting operation
+            self.redis_client.ping()
             key = f"user_messages:{user_id}"
             serialized_data = pickle.dumps(messages)
             self.redis_client.setex(key, self.ttl_seconds, serialized_data)
+        except redis.ConnectionError as e:
+            print(f"❌ Redis connection error when saving for user {user_id}: {e}")
         except Exception as e:
-            print(f"Error saving messages for user {user_id}: {e}")
+            print(f"❌ Error saving messages for user {user_id}: {type(e).__name__}: {e}")
     
     def add_message_to_user(self, user_id: str, message):
         """Add a single message to user's conversation history."""
-        messages = self.get_user_messages(user_id)
-        
-        # Only store HumanMessage and AIMessage for context
-        # Skip ToolMessage to avoid conversation flow issues
-        if hasattr(message, 'type') and message.type in ['human', 'ai']:
-            messages.append(message)
-            # Keep only last 30 messages to prevent memory overflow
-            if len(messages) > 30:
-                messages = messages[-30:]
-            self.save_user_messages(user_id, messages)
+        try:
+            messages = self.get_user_messages(user_id)
+            
+            # Only store HumanMessage and AIMessage for context
+            # Skip ToolMessage to avoid conversation flow issues
+            if hasattr(message, 'type') and message.type in ['human', 'ai']:
+                messages.append(message)
+                # Keep only last 30 messages to prevent memory overflow
+                if len(messages) > 30:
+                    messages = messages[-30:]
+                self.save_user_messages(user_id, messages)
+        except Exception as e:
+            print(f"❌ Error adding message for user {user_id}: {type(e).__name__}: {e}")
     
     def clear_user_messages(self, user_id: str):
         """Clear all messages for a specific user."""
@@ -97,23 +109,62 @@ class RedisMemory:
     def get_active_users(self) -> list:
         """Get list of all active users with stored conversations."""
         try:
+            self.redis_client.ping()  # Test connection first
             keys = self.redis_client.keys("user_messages:*")
             return [key.decode('utf-8').split(':')[1] for key in keys]
-        except Exception as e:
-            print(f"Error getting active users: {e}")
+        except redis.ConnectionError as e:
+            print(f"❌ Redis connection error getting active users: {e}")
             return []
+        except Exception as e:
+            print(f"❌ Error getting active users: {type(e).__name__}: {e}")
+            return []
+    
+    def test_connection(self) -> bool:
+        """Test Redis connection health."""
+        try:
+            self.redis_client.ping()
+            return True
+        except Exception as e:
+            print(f"❌ Redis connection test failed: {type(e).__name__}: {e}")
+            return False
 
-# Initialize Redis memory with error handling
-try:
-    redis_memory = RedisMemory(ttl_seconds=1800)  # 30 minutes TTL
-    # Test Redis connection
-    redis_memory.redis_client.ping()
-    print("✅ Redis connected successfully!")
-except Exception as e:
-    print(f"❌ Redis connection failed: {e}")
-    print("Please make sure Redis server is running on localhost:6379")
-    print("You can start Redis using: redis-server")
-    exit(1)
+# Initialize Redis memory with improved error handling
+def initialize_redis():
+    """Initialize Redis with proper error handling."""
+    try:
+        redis_memory = RedisMemory(ttl_seconds=1800)  # 30 minutes TTL
+        
+        # Test Redis connection
+        if redis_memory.test_connection():
+            print("✅ Redis connected successfully!")
+            return redis_memory
+        else:
+            print("❌ Redis connection test failed")
+            return None
+            
+    except redis.ConnectionError as e:
+        print(f"❌ Redis connection failed: {e}")
+        print("💡 Please make sure Redis server is running on localhost:6379")
+        print("🚀 Start Redis using: redis-server")
+        return None
+    except Exception as e:
+        print(f"❌ Redis initialization failed: {type(e).__name__}: {e}")
+        print("💡 Please check your Redis installation and configuration")
+        return None
+
+# Try to initialize Redis, but don't exit if it fails
+redis_memory = initialize_redis()
+if not redis_memory:
+    print("⚠️  Running without Redis memory - conversations won't be persistent")
+    # Create a fallback memory class that doesn't use Redis
+    class FallbackMemory:
+        def get_user_messages(self, user_id: str) -> list: return []
+        def add_message_to_user(self, user_id: str, message): pass
+        def save_user_messages(self, user_id: str, messages: list): pass
+        def clear_user_messages(self, user_id: str): pass
+        def get_active_users(self) -> list: return []
+        def test_connection(self) -> bool: return False
+    redis_memory = FallbackMemory()
 
 from langchain_core.tools import tool
 from geopy.geocoders import Nominatim
@@ -156,32 +207,78 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage
 
 # System prompt for Lotus Electronics chatbot
-SYSTEM_PROMPT = """You are the Lotus Electronics chatbot - an official AI assistant for India's leading electronics retailer.
+SYSTEM_PROMPT = """You are the Lotus Electronics chatbot - an intelligent AI Sales assistant for India's leading electronics retailer. Your goal is to increase sales through personalized, helpful conversations and product recommendations.
 
-TOOL USAGE RULES:
-- Use search_products for ANY electronics query (smartphones, TVs, laptops, ACs, etc.) or price mentions
-- Skip search_products only for: greetings, thank you, math questions, or casual chat like "okay", "hmm"
-- For price-only queries ("under 15k"), use conversation history to determine product category
-- Ask clarifying questions if the query is ambiguous (e.g., "What type of smartphone are you looking for?")
+INTELLIGENT DECISION MAKING:
+1. NEW PRODUCT SEARCH: Use search_products when:
+   - User asks for new product categories ("show me laptops", "I need headphones")
+   - User mentions specific brands not discussed ("Samsung phones", "Sony TVs")
+   - User asks for price ranges in new categories ("phones under 20k")
+   - User wants to browse different products ("what else do you have?")
 
-CONTEXT AWARENESS:
-- Track conversation context for price-only queries
-- Example: User asked about "smartphones" → later says "above 20k" → search "smartphones" with price_min=20000
+2. CONVERSATION & EXPLANATION: Skip search_products when:
+   - User asks about specific products from previous results ("tell me about the iPhone 15", "what are the features of that Samsung model?")
+   - User asks for comparisons between previously shown products
+   - User asks for explanations, reviews, or detailed info about mentioned products
+   - User says casual responses ("okay", "hmm", "thanks", "interesting")
+   - User asks clarifying questions about specifications, warranty, availability
+
+CONTEXT INTELLIGENCE:
+- Remember products shown in recent conversation
+- When user mentions "that phone" or "the Samsung one" - refer to previously discussed products
+- Provide detailed explanations without new searches if product was recently mentioned
+- Use conversation history to understand user preferences and recommend accordingly
+- Track user's budget, brand preferences, and feature requirements across the conversation
+
+SEARCH RESULTS PROCESSING:
+When you receive search results from search_products tool, you'll get raw data like:
+{
+  "search_query": "smartphones",
+  "total_found": 5,
+  "price_filter": {"min": 15000, "max": 50000},
+  "products": [...],
+  "search_metadata": {...}
+}
+
+INTELLIGENT RESPONSE CREATION:
+Use this data to create personalized responses based on:
+- User's search intent and context
+- Number of results found
+- Price filtering applied
+- User's conversation history
+- Product features and specifications
 
 RESPONSE FORMAT:
 {
-  "answer": "friendly response as Lotus Electronics chatbot",
+  "answer": "intelligent, context-aware response as Lotus Electronics sales assistant",
   "products": [{"product_name": "Name", "product_mrp": "₹Price", "product_url": "URL", "product_image": "Image", "features": ["Feature1", "Feature2"]}],
-  "end": "follow-up question if relevant"
+  "end": "relevant follow-up question based on user's journey"
 }
 
-ACKNOWLEDGMENT RESPONSES:
-For casual responses like "okay", "hmm", "thanks" - provide friendly conversational replies without calling search_products.
+SALES INTELLIGENCE:
+- Remember user's stated budget and preferences
+- Suggest complementary products (accessories, extended warranties)
+- Highlight unique selling points and competitive advantages
+- Address common concerns (battery life, performance, value for money)
+- Guide users toward purchase decisions with confidence
+- Create engaging, personalized responses rather than generic templates
+- Use search results to create contextual, helpful responses
 
-KEY POINTS:
-- search_products has return_direct=True - its output is final, no further processing
-- Always respond in JSON format
-- Be helpful and professional representing Lotus Electronics"""
+CONVERSATION FLOW EXAMPLES:
+✅ User: "show me smartphones" → SEARCH (new category) → LLM creates personalized response based on results
+✅ User: "tell me about the iPhone in that list" → EXPLAIN (no search, use knowledge)
+✅ User: "compare the Samsung and iPhone" → COMPARE (no search, use previous results)
+✅ User: "what about gaming laptops?" → SEARCH (new category) → LLM creates gaming-focused response
+✅ User: "which laptop has better graphics?" → EXPLAIN (no search, compare previous results)
+
+KEY PRINCIPLES:
+- Be conversational and intelligent, not robotic
+- Remember and reference previous products shown
+- Provide value through expertise, not just product lists
+- Guide users through their buying journey naturally
+- Create dynamic, context-aware responses from search data
+- Process tool results intelligently to create helpful responses
+- Always respond in JSON format with helpful, sales-focused content"""
 
 # Create LLM class
 llm = ChatGoogleGenerativeAI(
@@ -318,11 +415,11 @@ def should_continue(state: AgentState):
         print("🔄 AI made tool calls - continuing to tool execution...")
         return "continue"
     
-    # If called after tools node and the last message is a tool result, END here
-    # This is critical for return_direct=True behavior
+    # If called after tools node and the last message is a tool result, continue back to LLM
+    # for intelligent processing of the tool results
     if hasattr(last_message, 'type') and last_message.type == 'tool':
-        print("🏁 Tool execution complete - ending conversation (return_direct)")
-        return "end"
+        print("🔄 Tool execution complete - continuing to LLM for intelligent response")
+        return "continue"
         
     # If the last message is an AI message without tool calls, end
     if hasattr(last_message, 'type') and last_message.type == 'ai' and not hasattr(last_message, 'tool_calls'):
@@ -359,18 +456,18 @@ workflow.add_conditional_edges(
         "end": END,
     },
 )
-# 4. Add a conditional edge after `tools` is called to handle return_direct properly
+# 4. Add a conditional edge after `tools` is called to continue back to LLM for processing
 workflow.add_conditional_edges(
     # Edge is used after the `tools` node is called.
     "tools",
     # The function that will determine what happens after tool execution
     should_continue,
-    # For search_products with return_direct=True, we should end after tool execution
+    # Tools now return data to LLM for intelligent processing
     {
-        # If the tool has return_direct=True, we end here
-        "end": END,
-        # Otherwise continue to llm for further processing
+        # Continue back to LLM for intelligent response creation
         "continue": "llm",
+        # End only when LLM creates final response
+        "end": END,
     },
 )
 
@@ -416,12 +513,19 @@ def chat_with_agent(message: str, session_id: str = "default_session") -> str:
         # Use session_id as user_id for Redis memory
         user_id = session_id
         
+        # Check Redis connection health
+        redis_available = hasattr(redis_memory, 'test_connection') and redis_memory.test_connection()
+        if not redis_available:
+            print("⚠️  Redis not available - running without conversation memory")
+        
         # Create user message
         from langchain_core.messages import HumanMessage
         user_msg = HumanMessage(content=message)
         
         # Load previous conversation context (limited for Gemini compatibility)
-        previous_messages = redis_memory.get_user_messages(user_id)
+        previous_messages = []
+        if redis_available:
+            previous_messages = redis_memory.get_user_messages(user_id)
         
         # Filter and limit conversation history for better Gemini compatibility
         context_messages = []
@@ -429,8 +533,9 @@ def chat_with_agent(message: str, session_id: str = "default_session") -> str:
             if hasattr(msg, 'type') and msg.type in ['human', 'ai']:
                 context_messages.append(msg)
         
-        # Save user message to Redis memory
-        redis_memory.add_message_to_user(user_id, user_msg)
+        # Save user message to Redis memory if available
+        if redis_available:
+            redis_memory.add_message_to_user(user_id, user_msg)
         
         # Prepare inputs for the graph with conversation context
         all_messages = context_messages + [user_msg]
@@ -457,14 +562,11 @@ def chat_with_agent(message: str, session_id: str = "default_session") -> str:
             if "messages" in state and state["messages"]:
                 last_message = state["messages"][-1]
                 if hasattr(last_message, 'content') and hasattr(last_message, 'type'):
-                    # For return_direct=True tools, accept tool message results
-                    if last_message.type == 'tool' and last_message.content:
-                        print(f"🎯 Got tool result (return_direct): {len(last_message.content)} chars")
-                        final_response = last_message.content
-                        break  # Tool results are final with return_direct=True
-                    elif last_message.type == 'ai' and last_message.content:
+                    # Accept AI responses as final (tools now feed data to LLM for processing)
+                    if last_message.type == 'ai' and last_message.content:
                         print(f"🤖 Got AI response: {len(last_message.content)} chars")
                         final_response = last_message.content
+                        # Don't break here - let the conversation continue if there are more tool calls
         
         # Clean and validate the response
         if final_response:
@@ -534,9 +636,19 @@ def chat_with_agent(message: str, session_id: str = "default_session") -> str:
             return json.dumps(error_response, ensure_ascii=False, indent=2)
             
     except Exception as e:
+        print(f"❌ Error in chat_with_agent: {type(e).__name__}: {str(e)}")
+        
+        # Specific handling for different error types
+        if "Input/output error" in str(e) or "Errno 5" in str(e):
+            error_message = "I'm experiencing connectivity issues. Please check if Redis server is running and try again."
+        elif "Redis" in str(e):
+            error_message = "Database connection issue. Please ensure Redis server is running on localhost:6379."
+        else:
+            error_message = f"Technical issue occurred: {str(e)}. Please try again in a moment."
+        
         # Error response in JSON format
         error_response = {
-            "answer": f"I'm sorry, there was a technical issue: {str(e)}. Please try again in a moment.",
+            "answer": f"I'm sorry, there was a technical issue. {error_message}",
             "end": "Is there anything else I can help you with from our electronics collection?"
         }
         return json.dumps(error_response, ensure_ascii=False, indent=2)

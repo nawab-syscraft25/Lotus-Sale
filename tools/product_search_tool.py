@@ -134,13 +134,22 @@ class ProductSearchTool:
             print(f"❌ Vector search error: {e}")
             return []
     
-    def format_results(self, results: List[Dict[str, Any]]) -> str:
+    def format_results(self, results: List[Dict[str, Any]], query: str = "", top_k: int = 5, price_min: Optional[float] = None, price_max: Optional[float] = None) -> str:
         """Format search results for JSON response."""
         if not results:
             return json.dumps({
-                "answer": "I'm sorry, I couldn't find any products matching your criteria in our Lotus Electronics catalog. Please try adjusting your search terms or price range.",
+                "search_query": query,
+                "total_found": 0,
+                "price_filter": {
+                    "min": price_min,
+                    "max": price_max
+                },
                 "products": [],
-                "end": "What other electronics products can I help you find today?"
+                "search_metadata": {
+                    "top_k_requested": top_k,
+                    "has_price_filter": price_min is not None or price_max is not None,
+                    "no_results": True
+                }
             }, ensure_ascii=False, indent=2, separators=(',', ': '))
         
         # Format products for JSON response
@@ -195,10 +204,19 @@ class ProductSearchTool:
                 "features": features[:3]
             })
         
+        # Return raw product data for LLM to process intelligently
         response = {
-            "answer": f"Great! I found {len(results)} excellent electronics products from Lotus Electronics that match your requirements:",
+            "search_query": query,
+            "total_found": len(results),
+            "price_filter": {
+                "min": price_min,
+                "max": price_max
+            },
             "products": products,
-            "end": "Would you like more details about any of these products, or can I help you find something else?"
+            "search_metadata": {
+                "top_k_requested": top_k,
+                "has_price_filter": price_min is not None or price_max is not None
+            }
         }
         
         return json.dumps(response, ensure_ascii=False, indent=2, separators=(',', ': '))
@@ -206,7 +224,7 @@ class ProductSearchTool:
 # Initialize the product search tool instance
 product_search_instance = ProductSearchTool()
 
-@tool("search_products", args_schema=ProductSearchInput, return_direct=True)
+@tool("search_products", args_schema=ProductSearchInput, return_direct=False)
 def search_products(query: str, top_k: int = 5, price_min: Optional[float] = None, price_max: Optional[float] = None) -> str:
     """
     Search for products using semantic similarity with optional price filtering.
@@ -237,8 +255,14 @@ def search_products(query: str, top_k: int = 5, price_min: Optional[float] = Non
             price_max=price_max
         )
         
-        # Format and return results
-        return product_search_instance.format_results(results)
+        # Format and return results with search parameters
+        return product_search_instance.format_results(
+            results=results,
+            query=query,
+            top_k=top_k,
+            price_min=price_min,
+            price_max=price_max
+        )
         
     except Exception as e:
         return f"Error searching for products: {str(e)}"
