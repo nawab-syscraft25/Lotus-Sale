@@ -186,6 +186,60 @@ class ChatBot {
         this.scrollToBottom();
     }
 
+    addStoreCard(store) {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'store-card fade-in';
+        
+        // Map the correct field names from backend
+        const storeName = store.store_name || store.name || 'Store';
+        const address = store.address || 'Address not available';
+        const city = store.city || '';
+        const state = store.state || '';
+        const zipcode = store.zipcode || '';
+        const timing = store.timing || 'Timing not available';
+        const phone = store.phone || '0731-4265577'; // Default phone number
+        
+        // Format full address
+        const fullAddress = `${address}${city ? ', ' + city : ''}${zipcode ? ' - ' + zipcode : ''}${state ? ', ' + state : ''}`;
+
+        cardDiv.innerHTML = `
+            <div class="card mb-2 shadow-sm border">
+                <div class="row g-0">
+                    <div class="col-2 d-flex align-items-center justify-content-center bg-light">
+                        <i class="fas fa-store text-primary" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div class="col-10">
+                        <div class="card-body p-3">
+                            <h6 class="card-title mb-2 text-primary">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                ${storeName}
+                            </h6>
+                            <p class="card-text mb-2" style="font-size: 0.9rem;">
+                                <i class="fas fa-location-dot me-1 text-muted"></i>
+                                ${fullAddress}
+                            </p>
+                            <p class="card-text mb-2" style="font-size: 0.9rem;">
+                                <i class="fas fa-clock me-1 text-success"></i>
+                                <span class="text-success fw-bold">${timing}</span>
+                            </p>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary" onclick="window.open('https://maps.google.com/?q=${encodeURIComponent(fullAddress)}', '_blank')">
+                                    <i class="fas fa-directions me-1"></i>Get Directions
+                                </button>
+                                <button class="btn btn-sm btn-outline-success" onclick="window.open('tel:${phone}', '_self')">
+                                    <i class="fas fa-phone me-1"></i>Call Store
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        this.chatMessages.appendChild(cardDiv);
+        this.scrollToBottom();
+    }
+
     // addProductCard(product) {
     //     const card = document.createElement('div');
     //     card.className = 'product-card fade-in';
@@ -245,14 +299,49 @@ class ChatBot {
                 }
 
                 if (data.status === "success" || data.status === "partial" && data.data) {
-                    const answer = data.data.answer;
+                    let answer = data.data.answer;
                     const products = data.data.products;
+                    const stores = data.data.stores;
                     const comparison = data.data.comparison;
                     const end = data.data.end;
+
+                    // If stores are present, clean up the answer to avoid duplication
+                    if (stores && Array.isArray(stores) && stores.length > 0) {
+                        // Remove store listing from answer text but keep the intro
+                        const lines = answer.split('\n');
+                        const cleanedLines = [];
+                        let skipMode = false;
+                        
+                        for (let line of lines) {
+                            // Skip lines that contain store details (bullets, addresses, timings)
+                            if (line.includes('*') || line.includes('📍') || line.includes('🕒') || 
+                                line.includes('Store at') || line.includes('AM') || line.includes('PM')) {
+                                skipMode = true;
+                                continue;
+                            }
+                            
+                            // Keep intro lines and question at the end
+                            if (!skipMode || line.trim() === '' || line.includes('?') || 
+                                line.includes('specific area') || line.includes('looking for')) {
+                                cleanedLines.push(line);
+                                skipMode = false;
+                            }
+                        }
+                        
+                        answer = cleanedLines.join('\n').trim();
+                        
+                        // If answer becomes too short, provide a generic intro
+                        if (answer.length < 20) {
+                            answer = `Great! Here are ${stores.length} Lotus Electronics stores found:`;
+                        }
+                    }
 
                     if (answer) this.addMessage(answer, 'bot');
                     if (products && Array.isArray(products)) {
                         products.forEach(product => this.addProductCard(product));
+                    }
+                    if (stores && Array.isArray(stores)) {
+                        stores.forEach(store => this.addStoreCard(store));
                     }
                     if (comparison && Array.isArray(comparison)) {
                         comparison.forEach(item => {
@@ -384,7 +473,8 @@ class ChatBot {
             laptop: "I need a laptop. Can you help me choose the right one?",
             homeappliance: "I'm interested in home appliances. What brands and models do you have?",
             kitchenappliance: "I'm looking for kitchen appliances. What options are available?",
-            ac: "I need an air conditioner. Can you show me your AC collection?"
+            ac: "I need an air conditioner. Can you show me your AC collection?",
+            storelocator: "I want to find a Lotus Electronics store near me. Can you help?"
         };
 
         const message = categoryMessages[category] || `I'm interested in ${category} products.`;

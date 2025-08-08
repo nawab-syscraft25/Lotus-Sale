@@ -1,5 +1,6 @@
 import os
 import uuid
+import re
 from langgraph.checkpoint.memory import InMemorySaver
 from collections import deque
 from datetime import datetime, timedelta
@@ -195,90 +196,61 @@ class SearchInput(BaseModel):
 
 # Import the new product search tool
 from tools.product_search_tool import search_products
+# Import the store location tool
+from tools.get_nearby_store import get_near_store
     
 # from langchain_tavily import TavilySearch
 
 # tavily_tool = TavilySearch(max_results=2,tavily_api_key=tavily_api_key)
 
-tools = [search_products]
+tools = [search_products, get_near_store]
 
 from datetime import datetime
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage
 
 # System prompt for Lotus Electronics chatbot
-SYSTEM_PROMPT = """You are the Lotus Electronics chatbot - an intelligent AI Sales assistant for India's leading electronics retailer. Your goal is to increase sales through personalized, helpful conversations and product recommendations.
+SYSTEM_PROMPT = """You are Lotus Electronics Sales Assistant - helping customers find electronics products and store locations in India.
 
-INTELLIGENT DECISION MAKING:
-1. NEW PRODUCT SEARCH: Use search_products when:
-   - User asks for new product categories ("show me laptops", "I need headphones")
-   - User mentions specific brands not discussed ("Samsung phones", "Sony TVs")
-   - User asks for price ranges in new categories ("phones under 20k")
-   - User wants to browse different products ("what else do you have?")
+TOOL USAGE RULES:
+1. Use search_products ONLY when user asks for NEW products they haven't seen yet
+2. Use get_near_store ONLY when user asks about store locations by city or zipcode
+3. DON'T use tools when discussing products/stores already shown
 
-2. CONVERSATION & EXPLANATION: Skip search_products when:
-   - User asks about specific products from previous results ("tell me about the iPhone 15", "what are the features of that Samsung model?")
-   - User asks for comparisons between previously shown products
-   - User asks for explanations, reviews, or detailed info about mentioned products
-   - User says casual responses ("okay", "hmm", "thanks", "interesting")
-   - User asks clarifying questions about specifications, warranty, availability
-
-CONTEXT INTELLIGENCE:
-- Remember products shown in recent conversation
-- When user mentions "that phone" or "the Samsung one" - refer to previously discussed products
-- Provide detailed explanations without new searches if product was recently mentioned
-- Use conversation history to understand user preferences and recommend accordingly
-- Track user's budget, brand preferences, and feature requirements across the conversation
-
-SEARCH RESULTS PROCESSING:
-When you receive search results from search_products tool, you'll get raw data like:
+RESPONSE FORMAT - ALWAYS respond with this JSON structure:
 {
-  "search_query": "smartphones",
-  "total_found": 5,
-  "price_filter": {"min": 15000, "max": 50000},
-  "products": [...],
-  "search_metadata": {...}
+  "answer": "your conversational response only - NO product details or store details here",
+  "products": [product objects if search_products was used],
+  "stores": [store objects if get_near_store was used],
+  "end": "follow-up question to continue conversation"
 }
 
-INTELLIGENT RESPONSE CREATION:
-Use this data to create personalized responses based on:
-- User's search intent and context
-- Number of results found
-- Price filtering applied
-- User's conversation history
-- Product features and specifications
+CRITICAL ANSWER FIELD RULES:
+❌ NEVER put product names, prices, or specs in "answer"
+❌ NEVER put store names, addresses, or timings in "answer"
+✅ Only put conversational guidance and insights in "answer"
 
-RESPONSE FORMAT:
-{
-  "answer": "intelligent, context-aware response as Lotus Electronics sales assistant",
-  "products": [{"product_name": "Name", "product_mrp": "₹Price", "product_url": "URL", "product_image": "Image", "features": ["Feature1", "Feature2"]}],
-  "end": "relevant follow-up question based on user's journey"
-}
+EXAMPLES:
+When user asks "show me phones":
+✅ CORRECT: {"answer": "I found some great smartphones for you! These offer excellent value and modern features.", "products": [...], "end": "What's your budget range?"}
+❌ WRONG: {"answer": "Here are phones: Samsung A36 5G at ₹30,999...", "products": [...]}
 
-SALES INTELLIGENCE:
-- Remember user's stated budget and preferences
-- Suggest complementary products (accessories, extended warranties)
-- Highlight unique selling points and competitive advantages
-- Address common concerns (battery life, performance, value for money)
-- Guide users toward purchase decisions with confidence
-- Create engaging, personalized responses rather than generic templates
-- Use search results to create contextual, helpful responses
+When user asks "find store in Delhi":
+✅ CORRECT: {"answer": "Perfect! I found several Lotus stores in Delhi where you can visit.", "stores": [...], "end": "Which area is most convenient for you?"}
+❌ WRONG: {"answer": "Here are stores: Lotus Store at CP, Address...", "stores": [...]}
 
-CONVERSATION FLOW EXAMPLES:
-✅ User: "show me smartphones" → SEARCH (new category) → LLM creates personalized response based on results
-✅ User: "tell me about the iPhone in that list" → EXPLAIN (no search, use knowledge)
-✅ User: "compare the Samsung and iPhone" → COMPARE (no search, use previous results)
-✅ User: "what about gaming laptops?" → SEARCH (new category) → LLM creates gaming-focused response
-✅ User: "which laptop has better graphics?" → EXPLAIN (no search, compare previous results)
+CONVERSATION INTELLIGENCE:
+- Remember what products/stores were already shown
+- When user says "tell me about that Samsung phone" - explain without new search
+- When user says "what about the store timings" - answer from previous store results
+- Track user preferences (budget, brands, features) across conversation
 
-KEY PRINCIPLES:
-- Be conversational and intelligent, not robotic
-- Remember and reference previous products shown
-- Provide value through expertise, not just product lists
-- Guide users through their buying journey naturally
-- Create dynamic, context-aware responses from search data
-- Process tool results intelligently to create helpful responses
-- Always respond in JSON format with helpful, sales-focused content"""
+SALES APPROACH:
+- Be helpful and conversational
+- Guide users toward purchase decisions
+- Suggest visiting stores for hands-on experience
+- Ask relevant follow-up questions
+- Focus on customer needs and value"""
 
 # Create LLM class
 llm = ChatGoogleGenerativeAI(
@@ -289,7 +261,7 @@ llm = ChatGoogleGenerativeAI(
 )
 
 # Bind tools to the model
-model = llm.bind_tools([search_products])
+model = llm.bind_tools([search_products, get_near_store])
 
 # Test the model with tools
 # res=model.invoke(f"What is the weather in Berlin on {datetime.today()}?")
@@ -666,6 +638,7 @@ if __name__ == "__main__":
     print("="*60)
     print("\n💡 Available commands:")
     print("   • Ask about any electronics products")
+    print("   • Ask about store locations ('find store in [city]')")
     print("   • 'stats' - View your conversation stats")  
     print("   • 'clear' - Clear conversation history")
     print("   • 'quit'/'exit'/'bye' - End conversation")
@@ -673,6 +646,8 @@ if __name__ == "__main__":
     print("   • 'Show me Samsung ACs under 50000'")
     print("   • 'Find gaming laptops between 60000 and 100000'")
     print("   • 'I need wireless headphones'")
+    print("   • 'Find store in Indore'")
+    print("   • 'Show me stores near 452001'")
     print("-"*60)
 
     # Chat loop
@@ -719,6 +694,13 @@ if __name__ == "__main__":
                         if product.get('product_url'):
                             print(f"   🔗 URL: {product['product_url']}")
                 
+                if 'stores' in parsed_json and parsed_json['stores']:
+                    print(f"\n🏪 Stores Found ({len(parsed_json['stores'])}):")
+                    for i, store in enumerate(parsed_json['stores'], 1):
+                        print(f"\n{i}. 🏬 {store.get('store_name', 'N/A')}")
+                        print(f"   📍 {store.get('address', 'N/A')}, {store.get('city', 'N/A')} - {store.get('zipcode', 'N/A')}, {store.get('state', 'N/A')}")
+                        print(f"   🕒 {store.get('timing', 'N/A')}")
+                
                 if 'end' in parsed_json and parsed_json['end']:
                     print(f"\n❓ {parsed_json['end']}")
                     
@@ -741,6 +723,12 @@ if __name__ == "__main__":
                                 print(f"   💰 Price: {product.get('product_mrp', 'N/A')}")
                                 if product.get('features'):
                                     print(f"   ✨ Features: {', '.join(product['features'][:2])}")
+                        
+                        if 'stores' in parsed_json and parsed_json['stores']:
+                            print(f"\n🏪 Stores Found ({len(parsed_json['stores'])}):")
+                            for i, store in enumerate(parsed_json['stores'], 1):
+                                print(f"\n{i}. 🏬 {store.get('store_name', 'N/A')}")
+                                print(f"   📍 {store.get('address', 'N/A')}")
                         
                         if 'end' in parsed_json and parsed_json['end']:
                             print(f"\n❓ {parsed_json['end']}")
