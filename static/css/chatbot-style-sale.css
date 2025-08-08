@@ -211,6 +211,7 @@
         padding: 20px;
         overflow-y: auto;
         scroll-behavior: smooth;
+        font-family: 'Math', 'Gill Sans', 'Trebuchet MS', sans-serif;
     }
 
     .chat-messages::-webkit-scrollbar {

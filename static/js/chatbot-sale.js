@@ -223,7 +223,7 @@ class ChatBot {
                                 <span class="text-success fw-bold">${timing}</span>
                             </p>
                             <div class="d-flex gap-2">
-                                <button class="btn btn-sm btn-outline-primary" onclick="window.open('https://maps.google.com/?q=${encodeURIComponent(fullAddress)}', '_blank')">
+                                <button class="btn btn-sm btn-outline-primary" onclick="window.open('https://maps.google.com/?q=${encodeURIComponent(storeName + ' ' + fullAddress)}', '_blank')">
                                     <i class="fas fa-directions me-1"></i>Get Directions
                                 </button>
                                 <button class="btn btn-sm btn-outline-success" onclick="window.open('tel:${phone}', '_self')">
