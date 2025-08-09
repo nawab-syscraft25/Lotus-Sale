@@ -7,7 +7,7 @@ echo "🚀 Starting Lotus Electronics Chatbot API with Gunicorn..."
 export TOKENIZERS_PARALLELISM=false
 
 # Run with Gunicorn for production
-gunicorn main:app \
+gunicorn app_production:app \
   --bind 0.0.0.0:8001 \
   --workers 4 \
   --worker-class uvicorn.workers.UvicornWorker \
