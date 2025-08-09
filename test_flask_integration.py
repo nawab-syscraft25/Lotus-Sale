@@ -32,7 +32,7 @@ def test_chat_with_agent():
                 "description": "General conversation"
             },
             {
-                "message": "Show me gaming laptops under 80000",
+                "message": "Show me gaming laptops under 80010",
                 "session_id": "test_session_3",
                 "description": "Price-filtered search"
             }

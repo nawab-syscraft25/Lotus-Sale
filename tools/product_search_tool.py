@@ -244,7 +244,7 @@ def search_products(query: str, top_k: int = 5, price_min: Optional[float] = Non
     
     Example usage:
         - search_products("Samsung AC", top_k=3, price_min=15000, price_max=50000)
-        - search_products("gaming laptop under 80000", top_k=5, price_max=80000)
+        - search_products("gaming laptop under 80010", top_k=5, price_max=80010)
         - search_products("wireless headphones", top_k=10)
     """
     try:

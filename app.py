@@ -165,6 +165,6 @@ def api_search_only():
 
 
 if __name__ == "__main__":
-    # Load PORT from env or default to 8000
+    # Load PORT from env or default to 8001
     port = int(os.environ.get("PORT", 8001))
     app.run(host="0.0.0.0", port=port, debug=True)

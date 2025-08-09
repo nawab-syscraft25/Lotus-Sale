@@ -3,13 +3,12 @@
 
 echo "🚀 Starting Lotus Electronics Chatbot API with Gunicorn..."
 
-# Set environment variables if needed
-# export GOOGLE_API_KEY="your_google_api_key_here"
-# export TAVILY_API_KEY="your_tavily_api_key_here"
+# Disable Hugging Face tokenizer parallelism warning
+export TOKENIZERS_PARALLELISM=false
 
 # Run with Gunicorn for production
 gunicorn main:app \
-  --bind 0.0.0.0:8000 \
+  --bind 0.0.0.0:8001 \
   --workers 4 \
   --worker-class uvicorn.workers.UvicornWorker \
   --max-requests 1000 \
@@ -20,4 +19,4 @@ gunicorn main:app \
   --access-logfile - \
   --error-logfile -
 
-echo "✅ Production server started at http://localhost:8000"
+echo "✅ Production server started at http://localhost:8001"

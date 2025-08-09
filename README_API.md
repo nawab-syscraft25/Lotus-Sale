@@ -29,7 +29,7 @@ redis-server
 #### Development (Uvicorn)
 ```bash
 # Option 1: Direct command
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn main:app --host 0.0.0.0 --port 8001 --reload
 
 # Option 2: Use the startup script
 # Windows:
@@ -41,7 +41,7 @@ bash start_uvicorn.sh
 #### Production (Gunicorn)
 ```bash
 # Option 1: Direct command
-gunicorn main:app --bind 0.0.0.0:8000 --workers 4 --worker-class uvicorn.workers.UvicornWorker
+gunicorn main:app --bind 0.0.0.0:8001 --workers 4 --worker-class uvicorn.workers.UvicornWorker
 
 # Option 2: Use the startup script
 # Windows:
@@ -52,9 +52,9 @@ bash start_gunicorn.sh
 
 ### 4. Access the API
 
-- **API Server**: http://localhost:8000
-- **Interactive Documentation**: http://localhost:8000/docs
-- **Alternative Docs**: http://localhost:8000/redoc
+- **API Server**: http://localhost:8001
+- **Interactive Documentation**: http://localhost:8001/docs
+- **Alternative Docs**: http://localhost:8001/redoc
 
 ## 📋 API Endpoints
 
@@ -121,15 +121,15 @@ Open `chat_client.html` in your browser for a user-friendly chat interface.
 ### 3. cURL Examples
 ```bash
 # Health check
-curl http://localhost:8000/health
+curl http://localhost:8001/health
 
 # Send chat message
-curl -X POST http://localhost:8000/chat \
+curl -X POST http://localhost:8001/chat \
   -H "Content-Type: application/json" \
   -d '{"message": "Show me laptops under 50k", "session_id": "test_user"}'
 
 # Clear session
-curl http://localhost:8000/sessions/test_user/clear
+curl http://localhost:8001/sessions/test_user/clear
 ```
 
 ## ⚙️ Configuration
@@ -152,7 +152,7 @@ export REDIS_DB="0"
 
 #### Uvicorn (Development)
 - **Host**: 0.0.0.0 (accepts connections from any IP)
-- **Port**: 8000
+- **Port**: 8001
 - **Reload**: Enabled (auto-restarts on code changes)
 - **Log Level**: Info
 
@@ -241,7 +241,7 @@ server {
     server_name your-domain.com;
     
     location / {
-        proxy_pass http://127.0.0.1:8000;
+        proxy_pass http://127.0.0.1:8001;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
@@ -262,7 +262,7 @@ server {
 
 3. **Port Already in Use**
    - Change port: `--port 8001`
-   - Kill existing process: `lsof -ti:8000 | xargs kill`
+   - Kill existing process: `lsof -ti:8001 | xargs kill`
 
 4. **Import Errors**
    - Install dependencies: `pip install -r requirements.txt`

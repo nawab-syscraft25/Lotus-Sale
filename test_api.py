@@ -5,7 +5,7 @@ import requests
 import json
 import time
 
-API_BASE_URL = "http://localhost:8000"
+API_BASE_URL = "http://localhost:8001"
 
 def test_api():
     """Test the chatbot API with various queries"""

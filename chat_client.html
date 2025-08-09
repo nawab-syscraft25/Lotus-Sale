@@ -185,7 +185,7 @@
 
     <script>
         let sessionId = 'web_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        const API_BASE_URL = 'http://localhost:8000';
+        const API_BASE_URL = 'http://localhost:8001';
         
         function addMessage(content, isUser, isError = false) {
             const messagesContainer = document.getElementById('chatMessages');
@@ -277,7 +277,7 @@
                 
             } catch (error) {
                 console.error('Error:', error);
-                addMessage(`Sorry, there was an error: ${error.message}. Please make sure the API server is running on localhost:8000.`, false, true);
+                addMessage(`Sorry, there was an error: ${error.message}. Please make sure the API server is running on localhost:8001.`, false, true);
                 updateStatus('Error occurred');
             } finally {
                 // Re-enable input and hide typing
@@ -306,7 +306,7 @@
             })
             .catch(error => {
                 updateStatus('API server not available');
-                addMessage('⚠️ Could not connect to the API server. Please make sure it\'s running on localhost:8000.', false, true);
+                addMessage('⚠️ Could not connect to the API server. Please make sure it\'s running on localhost:8001.', false, true);
             });
     </script>
 </body>
