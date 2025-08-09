@@ -35,15 +35,13 @@ def health():
         
         # Check search tool availability
         pinecone_status = "connected" if search_tool.is_available else "disconnected"
-        api_status = "available" if search_tool.api_available else "unavailable"
         
         return jsonify({
             "status": "healthy",
             "service": "Lotus Electronics Chatbot",
             "redis": "connected",
             "search_methods": {
-                "pinecone_vector": pinecone_status,
-                "lotus_api": api_status
+                "pinecone_vector": pinecone_status
             },
             "active_users": len(redis_memory.get_active_users())
         })

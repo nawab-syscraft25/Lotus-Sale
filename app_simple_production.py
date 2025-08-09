@@ -110,7 +110,6 @@ def health():
         
         # Check search tool availability
         pinecone_status = "connected" if search_tool.is_available else "disconnected"
-        api_status = "available" if search_tool.api_available else "unavailable"
         
         health_data = {
             "status": "healthy",
@@ -123,8 +122,7 @@ def health():
                     "response_time": f"{redis_duration:.3f}s"
                 },
                 "search_methods": {
-                    "pinecone_vector": pinecone_status,
-                    "lotus_api": api_status
+                    "pinecone_vector": pinecone_status
                 }
             },
             "metrics": {
