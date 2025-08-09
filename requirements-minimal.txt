@@ -1,0 +1,3 @@
+# Minimal production requirements (install these if needed)
+gevent>=22.0.0
+gunicorn>=20.0.0

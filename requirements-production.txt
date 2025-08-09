@@ -1,0 +1,15 @@
+# Required packages for production scaling
+gevent==23.7.0
+gunicorn[gevent]==21.2.0
+prometheus-flask-exporter==0.23.0
+redis==5.0.0
+flask-limiter==3.5.0
+flask-caching==2.1.0
+
+# For monitoring and metrics
+psutil==5.9.5
+py-cpuinfo==9.0.0
+
+# For enhanced logging
+structlog==23.2.0
+colorlog==6.7.0

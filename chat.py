@@ -235,6 +235,7 @@ IMPORTANT: When user refers to a specific product from previous search results (
 - Extract the product_id from the previous search results in conversation context
 - Use the product_id with get_filtered_product_details_tool
 - Use user's city preference for accurate stock information
+- If user Say other Search for other brand products with same product category like smartphone the search result give smartphone of Samsung company if user say other then search fro Onepluse Smartphone or Oppo Vivo or iPhone.
 
 CRITICAL JSON RESPONSE RULES:
 ❌ NEVER create nested JSON strings inside JSON
@@ -682,11 +683,32 @@ def chat_with_agent(message: str, session_id: str = "default_session") -> str:
                     except:
                         pass
                 
-                # Wrap non-JSON response in JSON format
-                fallback_response = {
-                    "answer": clean_response,
-                    "end": "Is there anything else I can help you with from our electronics collection?"
-                }
+                # Wrap non-JSON response in JSON format with contextual handling
+                # Provide contextual responses based on user message
+                user_msg_lower = message.lower() if message else ""
+                
+                if any(greeting in user_msg_lower for greeting in ['hello', 'hi', 'hey', 'helo']):
+                    fallback_response = {
+                        "answer": "Hello! Welcome to Lotus Electronics! I'm here to help you find the perfect electronics products. What are you looking for today?",
+                        "end": "I can help you find TVs, smartphones, laptops, home appliances, and more. What interests you?"
+                    }
+                elif any(help_word in user_msg_lower for help_word in ['help', 'assist', 'support']):
+                    fallback_response = {
+                        "answer": "I'd be happy to help! I can assist you with finding products, getting detailed specifications, locating nearby stores, and checking availability.",
+                        "end": "What would you like to explore - TVs, smartphones, laptops, or something else?"
+                    }
+                elif any(thanks in user_msg_lower for thanks in ['thanks', 'thank you', 'thx']):
+                    fallback_response = {
+                        "answer": "You're welcome! I'm glad I could help.",
+                        "end": "Is there anything else you'd like to know about our electronics collection?"
+                    }
+                else:
+                    # Generic fallback with the original response
+                    fallback_response = {
+                        "answer": clean_response if clean_response else "I understand. How can I help you with Lotus Electronics products?",
+                        "end": "Are you looking for any specific electronics or need help finding a store?"
+                    }
+                
                 return json.dumps(fallback_response, ensure_ascii=False, indent=2)
         else:
             # Default response if no content

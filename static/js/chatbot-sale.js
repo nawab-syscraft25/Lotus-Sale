@@ -389,7 +389,80 @@ class ChatBot {
     // }
 
 
-    generateBotResponse(userMessage) {
+    processStructuredResponse(responseData) {
+        let answer = responseData.answer;
+        const products = responseData.products;
+        const productDetails = responseData.product_details;
+        const stores = responseData.stores;
+        const comparison = responseData.comparison;
+        const end = responseData.end;
+
+        // If stores are present, clean up the answer to avoid duplication
+        if (stores && Array.isArray(stores) && stores.length > 0) {
+            // Remove store listing from answer text but keep the intro
+            const lines = answer.split('\n');
+            const cleanedLines = [];
+            let skipMode = false;
+            
+            for (let line of lines) {
+                // Skip lines that contain store details (bullets, addresses, timings)
+                if (line.includes('*') || line.includes('📍') || line.includes('🕒') || 
+                    line.includes('Store at') || line.includes('AM') || line.includes('PM')) {
+                    skipMode = true;
+                    continue;
+                }
+                
+                // Keep intro lines and question at the end
+                if (!skipMode || line.trim() === '' || line.includes('?') || 
+                    line.includes('specific area') || line.includes('looking for')) {
+                    cleanedLines.push(line);
+                    skipMode = false;
+                }
+            }
+            
+            answer = cleanedLines.join('\n').trim();
+            
+            // If answer becomes too short, provide a generic intro
+            if (answer.length < 20) {
+                answer = `Great! Here are ${stores.length} Lotus Electronics stores found:`;
+            }
+        }
+
+        if (answer) this.addMessage(answer, 'bot');
+        if (products && Array.isArray(products)) {
+            products.forEach(product => this.addProductCard(product));
+        }
+        if (productDetails && Array.isArray(productDetails)) {
+            productDetails.forEach(details => this.addProductDetailsCard(details));
+        } else if (productDetails && typeof productDetails === 'object' && Object.keys(productDetails).length > 0) {
+            // Handle single product detail object - only if it has content
+            this.addProductDetailsCard(productDetails);
+        }
+        if (stores && Array.isArray(stores)) {
+            stores.forEach(store => this.addStoreCard(store));
+        }
+        if (comparison && Array.isArray(comparison)) {
+            comparison.forEach(item => {
+                let compMsg = `
+                <div class="max-w-xl mx-auto p-2">
+                  <div class="bg-white shadow rounded-xl p-4 border border-gray-200">
+                    <div class="font-bold mb-2 text-gray-800">
+                      Comparison: <span class="text-blue-700">${item.name}</span> <span class="text-gray-500">vs</span> <span class="text-green-700">${item.vs_name}</span>
+                    </div>
+                    <ul class="text-sm text-gray-700 list-disc ml-5 space-y-1 mb-2">
+                      ${item.differences.map(diff => `<li>${diff}</li>`).join('')}
+                    </ul>
+                    <div class="text-xs text-gray-500 mt-2"><em>Would you like to purchase one or need further details?</em></div>
+                  </div>
+                </div>
+                `;
+                this.addMessage(compMsg, 'bot');
+            });
+        }
+        if (end) this.addMessage(end, 'bot');
+    }
+
+    generateBotResponse(userMessage, retryCount = 0) {
         this.showTypingIndicator();
 
         const requestOptions = {
@@ -410,104 +483,113 @@ class ChatBot {
             .then(async response => {
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+                    const statusMessage = {
+                        429: 'Too many requests - please wait before trying again',
+                        500: 'Server is experiencing high traffic - please try again shortly',
+                        502: 'Server temporarily unavailable',
+                        503: 'Service temporarily unavailable',
+                        504: 'Request timed out - please try again'
+                    }[response.status] || `Server error (${response.status})`;
+                    
+                    throw new Error(errorData.detail || statusMessage);
                 }
                 return response.json();
             })
             .then(data => {
                 this.hideTypingIndicator();
+                
+                console.log("Response received:", data); // Debug logging
 
                 // Handle the new JSON response format
                 if (data.response) {
-                    data = data.response; // Unwrap if response is nested
+                    // If response is wrapped, unwrap it
+                    if (typeof data.response === 'string') {
+                        try {
+                            data = JSON.parse(data.response);
+                        } catch (e) {
+                            console.log("Failed to parse response string:", e);
+                            data = { answer: data.response };
+                        }
+                    } else {
+                        data = data.response;
+                    }
                 }
 
-                if (data.status === "success" || data.status === "partial" && data.data) {
-                    let answer = data.data.answer;
-                    const products = data.data.products;
-                    const productDetails = data.data.product_details;
-                    const stores = data.data.stores;
-                    const comparison = data.data.comparison;
-                    const end = data.data.end;
-
-                    // If stores are present, clean up the answer to avoid duplication
-                    if (stores && Array.isArray(stores) && stores.length > 0) {
-                        // Remove store listing from answer text but keep the intro
-                        const lines = answer.split('\n');
-                        const cleanedLines = [];
-                        let skipMode = false;
-                        
-                        for (let line of lines) {
-                            // Skip lines that contain store details (bullets, addresses, timings)
-                            if (line.includes('*') || line.includes('📍') || line.includes('🕒') || 
-                                line.includes('Store at') || line.includes('AM') || line.includes('PM')) {
-                                skipMode = true;
-                                continue;
-                            }
-                            
-                            // Keep intro lines and question at the end
-                            if (!skipMode || line.trim() === '' || line.includes('?') || 
-                                line.includes('specific area') || line.includes('looking for')) {
-                                cleanedLines.push(line);
-                                skipMode = false;
-                            }
-                        }
-                        
-                        answer = cleanedLines.join('\n').trim();
-                        
-                        // If answer becomes too short, provide a generic intro
-                        if (answer.length < 20) {
-                            answer = `Great! Here are ${stores.length} Lotus Electronics stores found:`;
-                        }
-                    }
-
-                    if (answer) this.addMessage(answer, 'bot');
-                    if (products && Array.isArray(products)) {
-                        products.forEach(product => this.addProductCard(product));
-                    }
-                    if (productDetails && Array.isArray(productDetails)) {
-                        productDetails.forEach(details => this.addProductDetailsCard(details));
-                    } else if (productDetails && typeof productDetails === 'object' && Object.keys(productDetails).length > 0) {
-                        // Handle single product detail object - only if it has content
-                        this.addProductDetailsCard(productDetails);
-                    }
-                    if (stores && Array.isArray(stores)) {
-                        stores.forEach(store => this.addStoreCard(store));
-                    }
-                    if (comparison && Array.isArray(comparison)) {
-                        comparison.forEach(item => {
-                            let compMsg = `
-                            <div class="max-w-xl mx-auto p-2">
-                              <div class="bg-white shadow rounded-xl p-4 border border-gray-200">
-                                <div class="font-bold mb-2 text-gray-800">
-                                  Comparison: <span class="text-blue-700">${item.name}</span> <span class="text-gray-500">vs</span> <span class="text-green-700">${item.vs_name}</span>
-                                </div>
-                                <ul class="text-sm text-gray-700 list-disc ml-5 space-y-1 mb-2">
-                                  ${item.differences.map(diff => `<li>${diff}</li>`).join('')}
-                                </ul>
-                                <div class="text-xs text-gray-500 mt-2"><em>Would you like to purchase one or need further details?</em></div>
-                              </div>
-                            </div>
-                            `;
-                            this.addMessage(compMsg, 'bot');
-                        });
-                    }
-                    if (end) this.addMessage(end, 'bot');
+                // Check for structured response format
+                if (data.status === "success" || (data.status === "partial" && data.data)) {
+                    this.processStructuredResponse(data.data);
+                } else if (data.answer !== undefined) {
+                    // Direct response format (answer, products, stores, etc. at top level)
+                    this.processStructuredResponse(data);
+                } else if (data.status === "error" && data.data) {
+                    this.addMessage(data.data.answer || "Sorry, something went wrong.", 'bot');
                 } else if (data.status === "error" && data.data) {
                     this.addMessage(data.data.answer || "Sorry, something went wrong.", 'bot');
                 } else {
-                    // Fallback for old format or unexpected response
-                    if (data.response) {
+                    // Handle different response formats
+                    console.log("Unexpected response format:", data);
+                    
+                    // Check if it's a simple string response
+                    if (typeof data === 'string') {
+                        this.addMessage(data, 'bot');
+                    } else if (data.response) {
                         this.addMessage(data.response, 'bot');
+                    } else if (data.answer) {
+                        this.addMessage(data.answer, 'bot');
+                    } else if (data.message) {
+                        this.addMessage(data.message, 'bot');
                     } else {
-                        this.addMessage("okay, I understood that.", 'bot');
+                        // Provide contextual response based on user message
+                        const userMsg = userMessage.toLowerCase();
+                        let responseMsg = "I'm here to help! How can I assist you with Lotus Electronics products today?";
+                        
+                        if (userMsg.includes('hello') || userMsg.includes('hi') || userMsg.includes('hey')) {
+                            responseMsg = "Hello! Welcome to Lotus Electronics! I'm here to help you find the perfect electronics products. What are you looking for today?";
+                        } else if (userMsg.includes('help')) {
+                            responseMsg = "I'd be happy to help! I can assist you with:\n• Finding products (TVs, smartphones, laptops, etc.)\n• Getting detailed product specifications\n• Locating nearby Lotus stores\n• Checking product availability\n\nWhat would you like to explore?";
+                        } else if (userMsg.includes('thanks') || userMsg.includes('thank you')) {
+                            responseMsg = "You're welcome! Is there anything else I can help you find in our electronics collection?";
+                        }
+                        
+                        this.addMessage(responseMsg, 'bot');
                     }
                 }
             })
             .catch(error => {
                 console.error("API error:", error);
                 this.hideTypingIndicator();
-                this.addMessage(`I apologize, but I'm having trouble: ${error.message}. Please try again.`, 'bot');
+                
+                // Check if this is a retryable error and we haven't exceeded retry limit
+                const isRetryableError = error.message.includes('500') || 
+                                       error.message.includes('502') || 
+                                       error.message.includes('503') || 
+                                       error.message.includes('504') ||
+                                       error.message.includes('timeout') ||
+                                       error.message.includes('Network');
+                
+                if (isRetryableError && retryCount < 2) {
+                    // Show retry message and attempt again after delay
+                    this.addMessage("Connection issue detected. Retrying in a moment...", 'bot');
+                    setTimeout(() => {
+                        this.generateBotResponse(userMessage, retryCount + 1);
+                    }, (retryCount + 1) * 2000); // Exponential backoff: 2s, 4s
+                    return;
+                }
+                
+                // Provide specific error messages
+                let errorMessage = "I apologize, but I'm having trouble. Please try again.";
+                
+                if (error.message.includes('500')) {
+                    errorMessage = "I'm experiencing high traffic right now. Please wait a moment and try again.";
+                } else if (error.message.includes('429')) {
+                    errorMessage = "Too many requests. Please wait a few seconds before trying again.";
+                } else if (error.message.includes('503') || error.message.includes('502')) {
+                    errorMessage = "Service temporarily unavailable. Please try again in a moment.";
+                } else if (error.message.includes('Network') || error.message.includes('timeout')) {
+                    errorMessage = "Network connection issue. Please check your internet and try again.";
+                }
+                
+                this.addMessage(errorMessage, 'bot');
             });
     }
 

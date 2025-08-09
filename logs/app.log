@@ -1,0 +1,213 @@
+2025-08-09 10:40:00,279 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-09 10:40:00,279 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-08-09 10:40:10,480 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-09 10:40:10,483 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-08-09 10:40:18,119 - __main__ - INFO - Starting Lotus Electronics Chatbot API...
+2025-08-09 10:40:18,171 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8001
+ * Running on http://10.46.74.57:8001
+2025-08-09 10:40:18,174 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-09 10:40:18,174 - werkzeug - INFO -  * Restarting with stat
+2025-08-09 10:40:28,166 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-09 10:40:28,166 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-08-09 10:40:36,527 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-09 10:40:36,527 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-08-09 10:40:43,964 - __main__ - INFO - Starting Lotus Electronics Chatbot API...
+2025-08-09 10:40:43,996 - werkzeug - WARNING -  * Debugger is active!
+2025-08-09 10:40:43,999 - werkzeug - INFO -  * Debugger PIN: 809-920-153
+2025-08-09 10:41:50,868 - __main__ - INFO - Request started - ID: req_1754716310868_1, Method: GET, Path: /, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:41:50,881 - __main__ - INFO - Request completed - ID: req_1754716310868_1, Status: 200, Duration: 0.013s, Active: 0
+2025-08-09 10:41:50,882 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:41:50] "GET / HTTP/1.1" 200 -
+2025-08-09 10:41:50,912 - __main__ - INFO - Request started - ID: req_1754716310912_2, Method: GET, Path: /static/css/chatbot-style-sale.css, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:41:50,915 - __main__ - INFO - Request started - ID: req_1754716310915_3, Method: GET, Path: /static/js/chatbot-sale.js, Remote: 127.0.0.1, Active: 2
+2025-08-09 10:41:51,102 - __main__ - INFO - Request completed - ID: req_1754716310912_2, Status: 200, Duration: 0.190s, Active: 1
+2025-08-09 10:41:51,102 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:41:51] "GET /static/css/chatbot-style-sale.css HTTP/1.1" 200 -
+2025-08-09 10:41:51,184 - __main__ - INFO - Request completed - ID: req_1754716310915_3, Status: 200, Duration: 0.269s, Active: 0
+2025-08-09 10:41:51,184 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:41:51] "GET /static/js/chatbot-sale.js HTTP/1.1" 200 -
+2025-08-09 10:41:51,208 - __main__ - INFO - Request started - ID: req_1754716311208_4, Method: GET, Path: /favicon.ico, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:41:51,217 - __main__ - INFO - Request completed - ID: req_1754716311208_4, Status: 404, Duration: 0.008s, Active: 0
+2025-08-09 10:41:51,217 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:41:51] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-08-09 10:41:55,050 - __main__ - INFO - Request started - ID: req_1754716315050_5, Method: POST, Path: /chat, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:41:55,050 - __main__ - INFO - Chat request - Session: fffe7578..., Message length: 4, Request ID: req_1754716315050_5
+2025-08-09 10:41:56,769 - __main__ - INFO - Chat response generated - Session: fffe7578..., Processing time: 1.720s, Request ID: req_1754716315050_5
+2025-08-09 10:41:56,769 - __main__ - INFO - Request completed - ID: req_1754716315050_5, Status: 200, Duration: 1.720s, Active: 0
+2025-08-09 10:41:56,769 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:41:56] "POST /chat HTTP/1.1" 200 -
+2025-08-09 10:42:07,064 - __main__ - INFO - Request started - ID: req_1754716327064_6, Method: POST, Path: /chat, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:42:07,064 - __main__ - INFO - Chat request - Session: fffe7578..., Message length: 5, Request ID: req_1754716327064_6
+2025-08-09 10:42:08,410 - __main__ - INFO - Chat response generated - Session: fffe7578..., Processing time: 1.346s, Request ID: req_1754716327064_6
+2025-08-09 10:42:08,410 - __main__ - INFO - Request completed - ID: req_1754716327064_6, Status: 200, Duration: 1.346s, Active: 0
+2025-08-09 10:42:08,413 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:42:08] "POST /chat HTTP/1.1" 200 -
+2025-08-09 10:44:31,049 - werkzeug - INFO -  * Detected change in 'C:\\AI\\sale-support\\chat.py', reloading
+2025-08-09 10:44:34,373 - werkzeug - INFO -  * Restarting with stat
+2025-08-09 10:44:47,779 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-09 10:44:47,779 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-08-09 10:44:56,965 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-09 10:44:56,965 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-08-09 10:45:04,025 - __main__ - INFO - Starting Lotus Electronics Chatbot API...
+2025-08-09 10:45:04,065 - werkzeug - WARNING -  * Debugger is active!
+2025-08-09 10:45:04,065 - werkzeug - INFO -  * Debugger PIN: 809-920-153
+2025-08-09 10:45:30,463 - werkzeug - INFO -  * Detected change in 'C:\\AI\\sale-support\\chat.py', reloading
+2025-08-09 10:45:33,499 - werkzeug - INFO -  * Restarting with stat
+2025-08-09 10:45:45,504 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-09 10:45:45,504 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-08-09 10:45:56,075 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-09 10:45:56,075 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-08-09 10:46:04,885 - __main__ - INFO - Starting Lotus Electronics Chatbot API...
+2025-08-09 10:46:04,946 - werkzeug - WARNING -  * Debugger is active!
+2025-08-09 10:46:04,955 - werkzeug - INFO -  * Debugger PIN: 809-920-153
+2025-08-09 10:46:05,019 - __main__ - INFO - Request started - ID: req_1754716565019_1, Method: GET, Path: /, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:46:05,028 - __main__ - INFO - Request completed - ID: req_1754716565019_1, Status: 200, Duration: 0.009s, Active: 0
+2025-08-09 10:46:05,030 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:46:05] "GET / HTTP/1.1" 200 -
+2025-08-09 10:46:05,055 - __main__ - INFO - Request started - ID: req_1754716565055_2, Method: GET, Path: /static/css/chatbot-style-sale.css, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:46:05,057 - __main__ - INFO - Request started - ID: req_1754716565057_3, Method: GET, Path: /static/js/chatbot-sale.js, Remote: 127.0.0.1, Active: 2
+2025-08-09 10:46:05,191 - __main__ - INFO - Request completed - ID: req_1754716565055_2, Status: 200, Duration: 0.136s, Active: 1
+2025-08-09 10:46:05,191 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:46:05] "GET /static/css/chatbot-style-sale.css HTTP/1.1" 200 -
+2025-08-09 10:46:05,260 - __main__ - INFO - Request completed - ID: req_1754716565057_3, Status: 200, Duration: 0.199s, Active: 0
+2025-08-09 10:46:05,260 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:46:05] "GET /static/js/chatbot-sale.js HTTP/1.1" 200 -
+2025-08-09 10:46:06,237 - __main__ - INFO - Request started - ID: req_1754716566237_4, Method: GET, Path: /favicon.ico, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:46:06,239 - __main__ - INFO - Request completed - ID: req_1754716566237_4, Status: 404, Duration: 0.002s, Active: 0
+2025-08-09 10:46:06,239 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:46:06] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-08-09 10:46:10,999 - __main__ - INFO - Request started - ID: req_1754716570999_5, Method: POST, Path: /chat, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:46:11,001 - __main__ - INFO - Chat request - Session: e243d061..., Message length: 5, Request ID: req_1754716570999_5
+2025-08-09 10:46:13,490 - __main__ - INFO - Chat response generated - Session: e243d061..., Processing time: 2.489s, Request ID: req_1754716570999_5
+2025-08-09 10:46:13,496 - __main__ - INFO - Request completed - ID: req_1754716570999_5, Status: 200, Duration: 2.497s, Active: 0
+2025-08-09 10:46:13,496 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:46:13] "POST /chat HTTP/1.1" 200 -
+2025-08-09 10:51:36,882 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-09 10:51:36,882 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-08-09 10:51:45,440 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-09 10:51:45,440 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-08-09 10:51:54,389 - __main__ - INFO - Starting Lotus Electronics Chatbot API...
+2025-08-09 10:51:54,433 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8001
+ * Running on http://10.46.74.57:8001
+2025-08-09 10:51:54,433 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-09 10:51:54,440 - werkzeug - INFO -  * Restarting with stat
+2025-08-09 10:52:03,951 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-09 10:52:03,967 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-08-09 10:52:14,095 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-09 10:52:14,095 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-08-09 10:52:22,121 - __main__ - INFO - Starting Lotus Electronics Chatbot API...
+2025-08-09 10:52:22,161 - werkzeug - WARNING -  * Debugger is active!
+2025-08-09 10:52:22,164 - werkzeug - INFO -  * Debugger PIN: 809-920-153
+2025-08-09 10:56:20,957 - __main__ - INFO - Request started - ID: req_1754717180957_1, Method: GET, Path: /, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:56:20,966 - __main__ - INFO - Request completed - ID: req_1754717180957_1, Status: 200, Duration: 0.008s, Active: 0
+2025-08-09 10:56:20,966 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:56:20] "GET / HTTP/1.1" 200 -
+2025-08-09 10:56:20,995 - __main__ - INFO - Request started - ID: req_1754717180995_2, Method: GET, Path: /static/css/chatbot-style-sale.css, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:56:20,995 - __main__ - INFO - Request started - ID: req_1754717180995_3, Method: GET, Path: /static/js/chatbot-sale.js, Remote: 127.0.0.1, Active: 2
+2025-08-09 10:56:21,083 - __main__ - INFO - Request completed - ID: req_1754717180995_2, Status: 200, Duration: 0.088s, Active: 1
+2025-08-09 10:56:21,083 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:56:21] "GET /static/css/chatbot-style-sale.css HTTP/1.1" 200 -
+2025-08-09 10:56:21,153 - __main__ - INFO - Request completed - ID: req_1754717180995_3, Status: 200, Duration: 0.159s, Active: 0
+2025-08-09 10:56:21,155 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:56:21] "GET /static/js/chatbot-sale.js HTTP/1.1" 200 -
+2025-08-09 10:56:22,096 - __main__ - INFO - Request started - ID: req_1754717182096_4, Method: GET, Path: /favicon.ico, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:56:22,096 - __main__ - INFO - Request completed - ID: req_1754717182096_4, Status: 404, Duration: 0.000s, Active: 0
+2025-08-09 10:56:22,104 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:56:22] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-08-09 10:56:26,484 - __main__ - INFO - Request started - ID: req_1754717186484_5, Method: POST, Path: /chat, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:56:26,488 - __main__ - INFO - Chat request - Session: 8d234f38..., Message length: 5, Request ID: req_1754717186484_5
+2025-08-09 10:56:28,365 - __main__ - INFO - Chat response generated - Session: 8d234f38..., Processing time: 1.877s, Request ID: req_1754717186484_5
+2025-08-09 10:56:28,365 - __main__ - INFO - Request completed - ID: req_1754717186484_5, Status: 200, Duration: 1.882s, Active: 0
+2025-08-09 10:56:28,365 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:56:28] "POST /chat HTTP/1.1" 200 -
+2025-08-09 10:56:33,332 - __main__ - INFO - Request started - ID: req_1754717193329_6, Method: GET, Path: /static/css/chatbot-style-sale.css, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:56:33,332 - __main__ - INFO - Request completed - ID: req_1754717193329_6, Status: 304, Duration: 0.003s, Active: 0
+2025-08-09 10:56:33,332 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:56:33] "[36mGET /static/css/chatbot-style-sale.css HTTP/1.1[0m" 304 -
+2025-08-09 10:56:33,373 - __main__ - INFO - Request started - ID: req_1754717193373_7, Method: GET, Path: /.well-known/appspecific/com.chrome.devtools.json, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:56:33,373 - __main__ - INFO - Request completed - ID: req_1754717193373_7, Status: 404, Duration: 0.000s, Active: 0
+2025-08-09 10:56:33,381 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:56:33] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+2025-08-09 10:56:44,765 - __main__ - INFO - Request started - ID: req_1754717204765_8, Method: POST, Path: /chat, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:56:44,774 - __main__ - INFO - Chat request - Session: 8d234f38..., Message length: 27, Request ID: req_1754717204765_8
+2025-08-09 10:56:54,365 - __main__ - INFO - Chat response generated - Session: 8d234f38..., Processing time: 9.591s, Request ID: req_1754717204765_8
+2025-08-09 10:56:54,365 - __main__ - INFO - Request completed - ID: req_1754717204765_8, Status: 200, Duration: 9.600s, Active: 0
+2025-08-09 10:56:54,365 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:56:54] "POST /chat HTTP/1.1" 200 -
+2025-08-09 10:57:22,622 - __main__ - INFO - Request started - ID: req_1754717242622_9, Method: POST, Path: /chat, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:57:22,625 - __main__ - INFO - Chat request - Session: 8d234f38..., Message length: 23, Request ID: req_1754717242622_9
+2025-08-09 10:57:30,899 - __main__ - INFO - Chat response generated - Session: 8d234f38..., Processing time: 8.274s, Request ID: req_1754717242622_9
+2025-08-09 10:57:30,899 - __main__ - INFO - Request completed - ID: req_1754717242622_9, Status: 200, Duration: 8.277s, Active: 0
+2025-08-09 10:57:30,899 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:57:30] "POST /chat HTTP/1.1" 200 -
+2025-08-09 10:57:48,009 - __main__ - INFO - Request started - ID: req_1754717268009_10, Method: POST, Path: /chat, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:57:48,009 - __main__ - INFO - Chat request - Session: 8d234f38..., Message length: 63, Request ID: req_1754717268009_10
+2025-08-09 10:57:56,414 - __main__ - INFO - Chat response generated - Session: 8d234f38..., Processing time: 8.405s, Request ID: req_1754717268009_10
+2025-08-09 10:57:56,426 - __main__ - INFO - Request completed - ID: req_1754717268009_10, Status: 200, Duration: 8.417s, Active: 0
+2025-08-09 10:57:56,426 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:57:56] "POST /chat HTTP/1.1" 200 -
+2025-08-09 10:58:51,630 - __main__ - INFO - Request started - ID: req_1754717331630_11, Method: POST, Path: /chat, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:58:51,630 - __main__ - INFO - Chat request - Session: 8d234f38..., Message length: 34, Request ID: req_1754717331630_11
+2025-08-09 10:58:53,357 - __main__ - INFO - Chat response generated - Session: 8d234f38..., Processing time: 1.726s, Request ID: req_1754717331630_11
+2025-08-09 10:58:53,357 - __main__ - INFO - Request completed - ID: req_1754717331630_11, Status: 200, Duration: 1.726s, Active: 0
+2025-08-09 10:58:53,357 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:58:53] "POST /chat HTTP/1.1" 200 -
+2025-08-09 10:59:10,662 - __main__ - INFO - Request started - ID: req_1754717350662_12, Method: POST, Path: /chat, Remote: 127.0.0.1, Active: 1
+2025-08-09 10:59:10,662 - __main__ - INFO - Chat request - Session: 8d234f38..., Message length: 6, Request ID: req_1754717350662_12
+2025-08-09 10:59:22,166 - __main__ - INFO - Chat response generated - Session: 8d234f38..., Processing time: 11.504s, Request ID: req_1754717350662_12
+2025-08-09 10:59:22,166 - __main__ - INFO - Request completed - ID: req_1754717350662_12, Status: 200, Duration: 11.504s, Active: 0
+2025-08-09 10:59:22,166 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 10:59:22] "POST /chat HTTP/1.1" 200 -
+2025-08-09 11:07:36,042 - werkzeug - INFO -  * Detected change in 'C:\\AI\\sale-support\\chat.py', reloading
+2025-08-09 11:07:39,348 - werkzeug - INFO -  * Restarting with stat
+2025-08-09 11:07:51,567 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-09 11:07:51,567 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-08-09 11:08:00,605 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-09 11:08:00,605 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-08-09 11:08:08,358 - __main__ - INFO - Starting Lotus Electronics Chatbot API...
+2025-08-09 11:08:08,402 - werkzeug - WARNING -  * Debugger is active!
+2025-08-09 11:08:08,407 - werkzeug - INFO -  * Debugger PIN: 809-920-153
+2025-08-09 11:14:33,348 - werkzeug - INFO -  * Detected change in 'C:\\AI\\sale-support\\chat.py', reloading
+2025-08-09 11:14:36,612 - werkzeug - INFO -  * Restarting with stat
+2025-08-09 11:14:54,269 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-09 11:14:54,269 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-08-09 11:15:03,016 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-09 11:15:03,016 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-08-09 11:15:10,771 - __main__ - INFO - Starting Lotus Electronics Chatbot API...
+2025-08-09 11:15:10,800 - werkzeug - WARNING -  * Debugger is active!
+2025-08-09 11:15:10,813 - werkzeug - INFO -  * Debugger PIN: 809-920-153
+2025-08-09 11:15:10,833 - __main__ - INFO - Request started - ID: req_1754718310833_1, Method: GET, Path: /, Remote: 127.0.0.1, Active: 1
+2025-08-09 11:15:10,846 - __main__ - INFO - Request started - ID: req_1754718310846_2, Method: GET, Path: /, Remote: 127.0.0.1, Active: 2
+2025-08-09 11:15:10,850 - __main__ - INFO - Request completed - ID: req_1754718310833_1, Status: 200, Duration: 0.017s, Active: 1
+2025-08-09 11:15:10,850 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 11:15:10] "GET / HTTP/1.1" 200 -
+2025-08-09 11:15:10,858 - __main__ - INFO - Request completed - ID: req_1754718310846_2, Status: 200, Duration: 0.012s, Active: 0
+2025-08-09 11:15:10,858 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 11:15:10] "GET / HTTP/1.1" 200 -
+2025-08-09 11:15:10,889 - __main__ - INFO - Request started - ID: req_1754718310889_3, Method: GET, Path: /static/css/chatbot-style-sale.css, Remote: 127.0.0.1, Active: 1
+2025-08-09 11:15:10,921 - __main__ - INFO - Request started - ID: req_1754718310921_4, Method: GET, Path: /static/css/chatbot-style-sale.css, Remote: 127.0.0.1, Active: 2
+2025-08-09 11:15:10,948 - __main__ - INFO - Request completed - ID: req_1754718310889_3, Status: 200, Duration: 0.059s, Active: 1
+2025-08-09 11:15:10,953 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 11:15:10] "GET /static/css/chatbot-style-sale.css HTTP/1.1" 200 -
+2025-08-09 11:15:10,969 - __main__ - INFO - Request completed - ID: req_1754718310921_4, Status: 200, Duration: 0.048s, Active: 0
+2025-08-09 11:15:10,969 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 11:15:10] "GET /static/css/chatbot-style-sale.css HTTP/1.1" 200 -
+2025-08-09 11:15:11,014 - __main__ - INFO - Request started - ID: req_1754718311014_5, Method: GET, Path: /.well-known/appspecific/com.chrome.devtools.json, Remote: 127.0.0.1, Active: 1
+2025-08-09 11:15:11,014 - __main__ - INFO - Request completed - ID: req_1754718311014_5, Status: 404, Duration: 0.000s, Active: 0
+2025-08-09 11:15:11,014 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 11:15:11] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+2025-08-09 11:15:11,541 - __main__ - INFO - Request started - ID: req_1754718311541_6, Method: GET, Path: /static/js/chatbot-sale.js, Remote: 127.0.0.1, Active: 1
+2025-08-09 11:15:11,541 - __main__ - INFO - Request completed - ID: req_1754718311541_6, Status: 200, Duration: 0.000s, Active: 0
+2025-08-09 11:15:11,541 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 11:15:11] "GET /static/js/chatbot-sale.js HTTP/1.1" 200 -
+2025-08-09 11:15:11,809 - __main__ - INFO - Request started - ID: req_1754718311809_7, Method: GET, Path: /static/js/chatbot-sale.js, Remote: 127.0.0.1, Active: 1
+2025-08-09 11:15:11,809 - __main__ - INFO - Request completed - ID: req_1754718311809_7, Status: 200, Duration: 0.000s, Active: 0
+2025-08-09 11:15:11,809 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 11:15:11] "GET /static/js/chatbot-sale.js HTTP/1.1" 200 -
+2025-08-09 11:15:12,294 - __main__ - INFO - Request started - ID: req_1754718312294_8, Method: GET, Path: /favicon.ico, Remote: 127.0.0.1, Active: 1
+2025-08-09 11:15:12,294 - __main__ - INFO - Request completed - ID: req_1754718312294_8, Status: 404, Duration: 0.000s, Active: 0
+2025-08-09 11:15:12,294 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 11:15:12] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-08-09 11:16:12,520 - __main__ - INFO - Request started - ID: req_1754718372520_9, Method: POST, Path: /chat, Remote: 127.0.0.1, Active: 1
+2025-08-09 11:16:12,520 - __main__ - INFO - Chat request - Session: 39d35d2a..., Message length: 5, Request ID: req_1754718372520_9
+2025-08-09 11:16:14,453 - __main__ - INFO - Chat response generated - Session: 39d35d2a..., Processing time: 1.933s, Request ID: req_1754718372520_9
+2025-08-09 11:16:14,455 - __main__ - INFO - Request completed - ID: req_1754718372520_9, Status: 200, Duration: 1.935s, Active: 0
+2025-08-09 11:16:14,456 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 11:16:14] "POST /chat HTTP/1.1" 200 -
+2025-08-09 11:16:29,952 - __main__ - INFO - Request started - ID: req_1754718389952_10, Method: POST, Path: /chat, Remote: 127.0.0.1, Active: 1
+2025-08-09 11:16:29,952 - __main__ - INFO - Chat request - Session: 39d35d2a..., Message length: 28, Request ID: req_1754718389952_10
+2025-08-09 11:16:39,426 - __main__ - INFO - Chat response generated - Session: 39d35d2a..., Processing time: 9.474s, Request ID: req_1754718389952_10
+2025-08-09 11:16:39,426 - __main__ - INFO - Request completed - ID: req_1754718389952_10, Status: 200, Duration: 9.480s, Active: 0
+2025-08-09 11:16:39,426 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 11:16:39] "POST /chat HTTP/1.1" 200 -
+2025-08-09 11:16:47,468 - __main__ - INFO - Request started - ID: req_1754718407468_11, Method: POST, Path: /chat, Remote: 127.0.0.1, Active: 1
+2025-08-09 11:16:47,468 - __main__ - INFO - Chat request - Session: 39d35d2a..., Message length: 5, Request ID: req_1754718407468_11
+2025-08-09 11:16:55,841 - __main__ - INFO - Chat response generated - Session: 39d35d2a..., Processing time: 8.373s, Request ID: req_1754718407468_11
+2025-08-09 11:16:55,841 - __main__ - INFO - Request completed - ID: req_1754718407468_11, Status: 200, Duration: 8.373s, Active: 0
+2025-08-09 11:16:55,845 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 11:16:55] "POST /chat HTTP/1.1" 200 -
+2025-08-09 11:17:44,144 - __main__ - INFO - Request started - ID: req_1754718464144_12, Method: POST, Path: /chat, Remote: 127.0.0.1, Active: 1
+2025-08-09 11:17:44,144 - __main__ - INFO - Chat request - Session: 39d35d2a..., Message length: 5, Request ID: req_1754718464144_12
+2025-08-09 11:17:52,832 - __main__ - INFO - Chat response generated - Session: 39d35d2a..., Processing time: 8.688s, Request ID: req_1754718464144_12
+2025-08-09 11:17:52,834 - __main__ - INFO - Request completed - ID: req_1754718464144_12, Status: 200, Duration: 8.689s, Active: 0
+2025-08-09 11:17:52,834 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 11:17:52] "POST /chat HTTP/1.1" 200 -
+2025-08-09 11:18:02,127 - __main__ - INFO - Request started - ID: req_1754718482127_13, Method: POST, Path: /chat, Remote: 127.0.0.1, Active: 1
+2025-08-09 11:18:02,127 - __main__ - INFO - Chat request - Session: 39d35d2a..., Message length: 5, Request ID: req_1754718482127_13
+2025-08-09 11:18:10,976 - __main__ - INFO - Chat response generated - Session: 39d35d2a..., Processing time: 8.849s, Request ID: req_1754718482127_13
+2025-08-09 11:18:10,976 - __main__ - INFO - Request completed - ID: req_1754718482127_13, Status: 200, Duration: 8.849s, Active: 0
+2025-08-09 11:18:10,976 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 11:18:10] "POST /chat HTTP/1.1" 200 -
+2025-08-09 11:18:19,461 - __main__ - INFO - Request started - ID: req_1754718499461_14, Method: POST, Path: /chat, Remote: 127.0.0.1, Active: 1
+2025-08-09 11:18:19,461 - __main__ - INFO - Chat request - Session: 39d35d2a..., Message length: 7, Request ID: req_1754718499461_14
+2025-08-09 11:18:27,674 - __main__ - INFO - Chat response generated - Session: 39d35d2a..., Processing time: 8.213s, Request ID: req_1754718499461_14
+2025-08-09 11:18:27,676 - __main__ - INFO - Request completed - ID: req_1754718499461_14, Status: 200, Duration: 8.213s, Active: 0
+2025-08-09 11:18:27,676 - werkzeug - INFO - 127.0.0.1 - - [09/Aug/2025 11:18:27] "POST /chat HTTP/1.1" 200 -
