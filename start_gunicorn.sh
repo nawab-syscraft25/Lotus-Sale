@@ -26,16 +26,14 @@ gunicorn app:app \
   --bind 0.0.0.0:8001 \
   --workers $WORKERS \
   --worker-class sync \
-  --worker-connections 1000 \
   --max-requests 1000 \
   --max-requests-jitter 100 \
   --timeout 30 \
   --keep-alive 5 \
-  --preload-app \
+  --preload \
   --log-level info \
   --access-logfile logs/access.log \
   --error-logfile logs/error.log \
-  --capture-output \
   --daemon
 
 # Check if server started successfully

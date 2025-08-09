@@ -12,7 +12,7 @@ worker_class = "sync"  # Use sync workers for Flask (WSGI)
 worker_connections = 1000
 max_requests = 1000
 max_requests_jitter = 50
-preload_app = True
+preload = True  # Correct parameter name
 
 # Timeouts
 timeout = 30
