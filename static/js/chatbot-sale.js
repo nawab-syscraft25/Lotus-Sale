@@ -501,8 +501,21 @@ class ChatBot {
         if (stores && Array.isArray(stores)) {
             stores.forEach(store => this.addStoreCard(store));
         }
-        if (policyInfo && typeof policyInfo === 'object' && policyInfo.success) {
-            this.addPolicyInfoCard(policyInfo);
+        
+        // Handle policy info with better debugging and nested structure support
+        if (policyInfo && typeof policyInfo === 'object') {
+            console.log('🔍 Policy info received:', policyInfo);
+            
+            // Check for nested structure first
+            if (policyInfo.search_terms_conditions_response && policyInfo.search_terms_conditions_response.success) {
+                console.log('📋 Using nested policy structure');
+                this.addPolicyInfoCard(policyInfo.search_terms_conditions_response);
+            } else if (policyInfo.success) {
+                console.log('📋 Using direct policy structure');
+                this.addPolicyInfoCard(policyInfo);
+            } else {
+                console.log('⚠️ Policy info present but no success field found');
+            }
         }
         if (comparison && Array.isArray(comparison)) {
             comparison.forEach(item => {

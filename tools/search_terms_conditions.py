@@ -34,15 +34,16 @@ class TermsConditionsInput(BaseModel):
 class TermsConditionsSearchTool:
     """Tool for searching Lotus Electronics Terms & Conditions and Privacy Policy."""
     
-    def __init__(self):
+    def __init__(self, use_llm_refinement=False):
         self.is_available = DEPENDENCIES_AVAILABLE
         self.index = None
         self.model = None
         self.llm = None
+        self.use_llm_refinement = use_llm_refinement
         self._initialize_components()
     
     def _initialize_components(self):
-        """Initialize Pinecone, embedding model, and LLM for content refinement."""
+        """Initialize Pinecone, embedding model, and optionally LLM for content refinement."""
         if not self.is_available:
             return
             
@@ -61,23 +62,101 @@ class TermsConditionsSearchTool:
             pc = Pinecone(api_key=self.pinecone_api_key)
             self.index = pc.Index(self.index_name)
             
-            # Initialize LLM for content refinement
-            google_api_key = os.getenv("GOOGLE_API_KEY", "AIzaSyAvGjCSwrbYHCphNJrBI2JHOc1Ga_2SP-k")
-            self.llm = ChatGoogleGenerativeAI(
-                model="gemini-2.5-flash",
-                temperature=0.3,
-                google_api_key=google_api_key
-            )
-            
-            print("✅ Terms & Conditions search tool initialized successfully")
+            # Initialize LLM only if refinement is enabled
+            if self.use_llm_refinement:
+                google_api_key = os.getenv("GOOGLE_API_KEY", "AIzaSyAvGjCSwrbYHCphNJrBI2JHOc1Ga_2SP-k")
+                self.llm = ChatGoogleGenerativeAI(
+                    model="gemini-2.5-flash",
+                    temperature=0.1,  # Lower temperature for faster response
+                    google_api_key=google_api_key
+                )
+                print("✅ Terms & Conditions search tool initialized with LLM refinement")
+            else:
+                print("✅ Terms & Conditions search tool initialized (fast mode)")
             
         except Exception as e:
             print(f"❌ Failed to initialize T&C search tool: {e}")
             self.is_available = False
     
-    def clean_text(self, text: str) -> str:
-        """Remove extra spaces and line breaks from PDF text."""
-        return re.sub(r'\s+', ' ', text).strip()
+    def clean_and_format_text(self, text: str) -> str:
+        """Enhanced text cleaning and formatting for better readability."""
+        # Step 1: Basic cleaning
+        cleaned = re.sub(r'\s+', ' ', text).strip()
+        
+        # Step 2: Fix common OCR errors
+        fixes = {
+            'cust omer': 'customer',
+            'lotuselectr onics': 'Lotus Electronics',
+            'deliv ery': 'delivery',
+            'ser vices': 'services',
+            'transpor tation': 'transportation',
+            'Howe ver': 'However',
+            'effor t': 'effort',
+            'conv enience': 'convenience',
+            'befor e': 'before',
+            'receiv e': 'receive',
+            'tamper ed': 'tampered',
+            'char ges': 'charges',
+            'defectiv e': 'defective',
+            'contr ol': 'control',
+            'speci\ufb01cation': 'specification',
+            'entir e': 'entire',
+            'unlik ely': 'unlikely',
+            'Certiﬁcate': 'Certificate',
+            'wa y': 'way',
+            'v e': 've',
+            'Lotuselectr onics.com': 'Lotus Electronics',
+            'lotuselectr onics.com': 'Lotus Electronics'
+        }
+        
+        for old, new in fixes.items():
+            cleaned = cleaned.replace(old, new)
+        
+        # Step 3: Format into readable sentences
+        # Add proper sentence breaks
+        cleaned = re.sub(r'([.!?])\s*([A-Z])', r'\1\n\n\2', cleaned)
+        
+        # Fix spacing around punctuation
+        cleaned = re.sub(r'\s+([,.!?;:])', r'\1', cleaned)
+        cleaned = re.sub(r'([.!?])\s*', r'\1 ', cleaned)
+        
+        # Step 4: Structure content with bullet points where appropriate
+        # Look for policy points and format them
+        if 'return' in cleaned.lower() or 'refund' in cleaned.lower():
+            # Structure return/refund policies
+            cleaned = self._format_return_policy(cleaned)
+        elif 'warranty' in cleaned.lower():
+            cleaned = self._format_warranty_policy(cleaned)
+        elif 'privacy' in cleaned.lower() or 'data' in cleaned.lower():
+            cleaned = self._format_privacy_policy(cleaned)
+        
+        return cleaned.strip()
+    
+    def _format_return_policy(self, text: str) -> str:
+        """Format return policy text for better readability."""
+        # Extract key return policy points
+        formatted = text
+        
+        # Add structure for return timeframes
+        if '7 days' in text:
+            formatted = formatted.replace('within 7 days', '\n• Within 7 days')
+        
+        # Highlight key conditions
+        if 'unopened item' in text:
+            formatted = formatted.replace('unopened item', '\n• Unopened items only')
+        
+        if 'original packaging' in text:
+            formatted = formatted.replace('original packaging', '\n• In original packaging')
+        
+        return formatted
+    
+    def _format_warranty_policy(self, text: str) -> str:
+        """Format warranty policy text for better readability."""
+        return text  # Basic formatting for now
+    
+    def _format_privacy_policy(self, text: str) -> str:
+        """Format privacy policy text for better readability."""
+        return text  # Basic formatting for now
     
     def correct_spelling(self, text: str) -> str:
         """Correct simple typos in the query."""
@@ -179,20 +258,25 @@ Provide only the refined policy text, no additional commentary:
             for i, match in enumerate(results.get('matches', [])):
                 score = match.get('score', 0.0)
                 metadata = match.get('metadata', {})
-                text = self.clean_text(metadata.get('text', ''))
+                text = metadata.get('text', '').strip()  # Simple text extraction
                 
                 if max_results <= 2:  # Only show debug info for test runs
                     print(f"   Match {i+1}: Score={score:.4f}, Text length={len(text)}")
                 
                 # Include all results with text, no score filtering like search_tc.py
                 if text:
-                    # Refine the content using LLM for better readability
-                    refined_content = self.refine_policy_content(text, corrected_query)
+                    # Apply enhanced text cleaning and formatting
+                    cleaned_content = self.clean_and_format_text(text)
+                    
+                    # Use LLM refinement only if enabled and for high-relevance results
+                    if self.use_llm_refinement and score >= 0.4:
+                        refined_content = self.refine_policy_content(cleaned_content, corrected_query)
+                    else:
+                        refined_content = cleaned_content
                     
                     policy_sections.append({
                         "relevance_score": round(score, 4),
                         "content": refined_content,
-                        "raw_content": text,  # Keep original for debugging if needed
                         "section_type": metadata.get('section_type', 'general'),
                         "document": metadata.get('document', 'terms_conditions')
                     })
@@ -212,8 +296,8 @@ Provide only the refined policy text, no additional commentary:
                 "policy_sections": []
             }
 
-# Initialize the tool instance
-tc_search_tool = TermsConditionsSearchTool()
+# Initialize the tool instance in fast mode (no LLM refinement for speed)
+tc_search_tool = TermsConditionsSearchTool(use_llm_refinement=False)
 
 @tool("search_terms_conditions", args_schema=TermsConditionsInput)
 def search_terms_conditions(query: str, max_results: int = 3) -> str:
