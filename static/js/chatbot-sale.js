@@ -320,7 +320,7 @@ class ChatBot {
         const city = store.city || '';
         const state = store.state || '';
         const zipcode = store.zipcode || '';
-        const timing = store.timing || 'Timing not available';
+        const timing = store.timings || store.timing || 'Timing not available'; // Check both timings and timing
         const phone = store.phone || '0731-4265577'; // Default phone number
         
         // Format full address
@@ -364,6 +364,65 @@ class ChatBot {
         this.scrollToBottom();
     }
 
+    addPolicyInfoCard(policyInfo) {
+        if (!policyInfo.policy_sections || !Array.isArray(policyInfo.policy_sections)) {
+            return;
+        }
+
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'policy-card fade-in';
+        
+        let policySectionsHtml = '';
+        policyInfo.policy_sections.forEach((section, index) => {
+            const relevanceColor = section.relevance_score >= 0.9 ? 'text-success' : 
+                                  section.relevance_score >= 0.8 ? 'text-warning' : 'text-info';
+            
+            policySectionsHtml += `
+                <div class="policy-section mb-3 ${index > 0 ? 'border-top pt-3' : ''}">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-secondary">${section.document || 'Policy'}</span>
+                        <small class="${relevanceColor}">
+                            <i class="fas fa-star me-1"></i>
+                            ${Math.round(section.relevance_score * 100)}% relevant
+                        </small>
+                    </div>
+                    <div class="policy-content" style="font-size: 0.9rem; line-height: 1.5;">
+                        ${section.content.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `;
+        });
+
+        cardDiv.innerHTML = `
+            <div class="card mb-2 shadow-sm border-info">
+                <div class="row g-0">
+                    <div class="col-2 d-flex align-items-center justify-content-center bg-light">
+                        <i class="fas fa-shield-alt text-info" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div class="col-10">
+                        <div class="card-body p-3">
+                            <h6 class="card-title mb-3 text-info">
+                                <i class="fas fa-file-contract me-1"></i>
+                                Policy Information
+                                <small class="text-muted">(${policyInfo.total_found || 0} section${policyInfo.total_found !== 1 ? 's' : ''} found)</small>
+                            </h6>
+                            ${policySectionsHtml}
+                            <div class="mt-3 p-2 bg-light rounded">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    For complete terms and conditions, please visit our official website or contact customer service.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        this.chatMessages.appendChild(cardDiv);
+        this.scrollToBottom();
+    }
+
     // addProductCard(product) {
     //     const card = document.createElement('div');
     //     card.className = 'product-card fade-in';
@@ -394,6 +453,7 @@ class ChatBot {
         const products = responseData.products;
         const productDetails = responseData.product_details;
         const stores = responseData.stores;
+        const policyInfo = responseData.policy_info;
         const comparison = responseData.comparison;
         const end = responseData.end;
 
@@ -440,6 +500,9 @@ class ChatBot {
         }
         if (stores && Array.isArray(stores)) {
             stores.forEach(store => this.addStoreCard(store));
+        }
+        if (policyInfo && typeof policyInfo === 'object' && policyInfo.success) {
+            this.addPolicyInfoCard(policyInfo);
         }
         if (comparison && Array.isArray(comparison)) {
             comparison.forEach(item => {

@@ -200,12 +200,14 @@ from tools.product_search_tool import search_products
 from tools.get_nearby_store import get_near_store
 # Import the product details tool
 from tools.Product_details import get_filtered_product_details_tool
+# Import the terms & conditions search tool
+from tools.search_terms_conditions import search_terms_conditions
     
 # from langchain_tavily import TavilySearch
 
 # tavily_tool = TavilySearch(max_results=2,tavily_api_key=tavily_api_key)
 
-tools = [search_products, get_near_store, get_filtered_product_details_tool]
+tools = [search_products, get_near_store, get_filtered_product_details_tool, search_terms_conditions]
 
 from datetime import datetime
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -222,6 +224,7 @@ You MUST respond with EXACTLY this JSON structure - NO nested JSON strings, NO e
   "products": [array of product objects if search_products was used],
   "product_details": {product object if get_filtered_product_details_tool was used},
   "stores": [array of store objects if get_near_store was used],
+  "policy_info": {policy object if search_terms_conditions was used},
   "end": "follow-up question to continue conversation"
 }
 
@@ -229,7 +232,8 @@ TOOL USAGE RULES:
 1. Use search_products ONLY when user asks for NEW products they haven't seen yet
 2. Use get_near_store ONLY when user asks about store locations by city or zipcode
 3. Use get_filtered_product_details_tool when user wants MORE DETAILS about a specific product from previous results (extract product_id from conversation context)
-4. DON'T use tools when discussing general product info that doesn't need specific details
+4. Use search_terms_conditions when user asks about policies, terms, conditions, returns, warranty, privacy, refunds, or company policies
+5. DON'T use tools when discussing general product info that doesn't need specific details
 
 IMPORTANT: When user refers to a specific product from previous search results (like "tell me more about that Samsung phone"), you MUST:
 - Extract the product_id from the previous search results in conversation context
@@ -249,7 +253,9 @@ CRITICAL ANSWER FIELD RULES:
 ❌ NEVER put product names, prices, or specs in "answer"
 ❌ NEVER put store names, addresses, or timings in "answer"
 ❌ NEVER put detailed product specifications in "answer"
+❌ NEVER put policy text or terms content in "answer"
 ✅ Only put conversational guidance and insights in "answer"
+✅ Set unused fields to empty arrays [] or objects {} as appropriate
 
 EXAMPLES OF CORRECT RESPONSES:
 When user asks "show me phones":
@@ -276,7 +282,18 @@ When user asks "find store in Delhi":
   "products": [],
   "product_details": {},
   "stores": [{"store_name": "Lotus CP", "address": "Connaught Place", ...}],
+  "policy_info": {},
   "end": "Which area is most convenient for you?"
+}
+
+When user asks "what is your return policy":
+{
+  "answer": "Here's our return policy information to help you understand your options.",
+  "products": [],
+  "product_details": {},
+  "stores": [],
+  "policy_info": {"success": true, "policy_sections": [{"content": "Return policy details...", ...}]},
+  "end": "Do you have a specific product you'd like to return?"
 }
 
 CONVERSATION INTELLIGENCE:
@@ -286,6 +303,7 @@ CONVERSATION INTELLIGENCE:
 - Track user preferences (budget, brands, features) across conversation
 - Extract product_id from previous search results when user asks for specific product details
 - Always use the user's city preference for stock availability when getting product details
+- Sort The Product Based on user Query.
 
 SALES APPROACH:
 - Be helpful and conversational
@@ -306,7 +324,7 @@ llm = ChatGoogleGenerativeAI(
 )
 
 # Bind tools to the model
-model = llm.bind_tools([search_products, get_near_store, get_filtered_product_details_tool])
+model = llm.bind_tools([search_products, get_near_store, get_filtered_product_details_tool, search_terms_conditions])
 
 # Test the model with tools
 # res=model.invoke(f"What is the weather in Berlin on {datetime.today()}?")
@@ -690,22 +708,38 @@ def chat_with_agent(message: str, session_id: str = "default_session") -> str:
                 if any(greeting in user_msg_lower for greeting in ['hello', 'hi', 'hey', 'helo']):
                     fallback_response = {
                         "answer": "Hello! Welcome to Lotus Electronics! I'm here to help you find the perfect electronics products. What are you looking for today?",
+                        "products": [],
+                        "product_details": {},
+                        "stores": [],
+                        "policy_info": {},
                         "end": "I can help you find TVs, smartphones, laptops, home appliances, and more. What interests you?"
                     }
                 elif any(help_word in user_msg_lower for help_word in ['help', 'assist', 'support']):
                     fallback_response = {
                         "answer": "I'd be happy to help! I can assist you with finding products, getting detailed specifications, locating nearby stores, and checking availability.",
+                        "products": [],
+                        "product_details": {},
+                        "stores": [],
+                        "policy_info": {},
                         "end": "What would you like to explore - TVs, smartphones, laptops, or something else?"
                     }
                 elif any(thanks in user_msg_lower for thanks in ['thanks', 'thank you', 'thx']):
                     fallback_response = {
                         "answer": "You're welcome! I'm glad I could help.",
+                        "products": [],
+                        "product_details": {},
+                        "stores": [],
+                        "policy_info": {},
                         "end": "Is there anything else you'd like to know about our electronics collection?"
                     }
                 else:
                     # Generic fallback with the original response
                     fallback_response = {
                         "answer": clean_response if clean_response else "I understand. How can I help you with Lotus Electronics products?",
+                        "products": [],
+                        "product_details": {},
+                        "stores": [],
+                        "policy_info": {},
                         "end": "Are you looking for any specific electronics or need help finding a store?"
                     }
                 
@@ -714,6 +748,10 @@ def chat_with_agent(message: str, session_id: str = "default_session") -> str:
             # Default response if no content
             error_response = {
                 "answer": "I apologize, but I couldn't process your request at the moment. Please try again or contact our support team.",
+                "products": [],
+                "product_details": {},
+                "stores": [],
+                "policy_info": {},
                 "end": "How else can I assist you with Lotus Electronics products today?"
             }
             return json.dumps(error_response, ensure_ascii=False, indent=2)
@@ -732,6 +770,10 @@ def chat_with_agent(message: str, session_id: str = "default_session") -> str:
         # Error response in JSON format
         error_response = {
             "answer": f"I'm sorry, there was a technical issue. {error_message}",
+            "products": [],
+            "product_details": {},
+            "stores": [],
+            "policy_info": {},
             "end": "Is there anything else I can help you with from our electronics collection?"
         }
         return json.dumps(error_response, ensure_ascii=False, indent=2)
@@ -761,6 +803,10 @@ if __name__ == "__main__":
     print("   • 'Tell me more about that iPhone' (after seeing product list)")
     print("   • 'Find store in Indore'")
     print("   • 'Show me stores near 452001'")
+    print("   • 'What is your return policy?'")
+    print("   • 'Tell me about warranty terms'")
+    print("   • 'How do you protect my privacy?'")
+    print("   • 'What are the refund conditions?'")
     print("-"*60)
 
     # Chat loop
