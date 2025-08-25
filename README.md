@@ -1,3 +1,9 @@
+
+Author: Nawab Khan
+GitHub: [https://github.com/nawabkh2040](https://github.com/nawabkh2040)
+
+---
+
 # Agentic AI for E-Commerce
 
 This project is an AI-powered agent for e-commerce that provides product recommendations, store details, and smart product search.
@@ -32,37 +38,61 @@ Project Structure:
 Installation:
 
 1. Clone the repository
-   git clone [https://github.com/your-org/ecommerce-agentic-ai.git](https://github.com/your-org/ecommerce-agentic-ai.git)
-   cd ecommerce-agentic-ai
+
+```
+git clone https://github.com/your-org/ecommerce-agentic-ai.git
+cd ecommerce-agentic-ai
+```
 
 2. Create and activate virtual environment
-   python -m venv venv
-   source venv/bin/activate   (Linux/Mac)
-   venv\Scripts\activate      (Windows)
+
+```
+python -m venv venv
+source venv/bin/activate   # Linux/Mac
+venv\Scripts\activate      # Windows
+```
 
 3. Install dependencies
-   pip install -r requirements.txt
 
-   For production:
-   pip install -r requirements-production.txt
+```
+pip install -r requirements.txt
+```
+
+For production:
+
+```
+pip install -r requirements-production.txt
+```
 
 ---
 
 Running the App:
 
 Development mode:
+
+```
 python app.py
+```
 
 Production (Gunicorn):
-gunicorn -c gunicorn.conf.py app\_production\:app
+
+```
+gunicorn -c gunicorn.conf.py app_production:app
+```
 
 Using Docker:
+
+```
 docker-compose -f docker-compose.prod.yml up --build -d
+```
 
 ---
 
 Testing:
+
+```
 pytest tests/
+```
 
 ---
 
@@ -72,5 +102,4 @@ Roadmap:
 * Personalization with user history
 * External marketplace integration
 * Analytics dashboard
-
 
