@@ -32,6 +32,8 @@ Project Structure:
 * gunicorn.conf.py, nginx.conf → Server configurations
 * requirements.txt, requirements-production.txt → Dependencies
 * tests/ → Unit and integration tests
+* README\_API.md → Detailed API documentation
+* README\_Redis.md → Redis setup and integration guide
 
 ---
 
@@ -96,10 +98,20 @@ pytest tests/
 
 ---
 
+More Documentation:
+
+* For API usage and endpoints → see `README_API.md`
+* For Redis setup and usage → see `README_Redis.md`
+
+---
+
 Roadmap:
 
 * Add multi-language product search
 * Personalization with user history
 * External marketplace integration
 * Analytics dashboard
+
+---
+
 
