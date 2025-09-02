@@ -8,7 +8,6 @@ s
 tools/__pycache__/Product_details.cpython-310.pyc
 
 
-temp_auto_push.bat
 utiles/
 
 *pyc
@@ -19,5 +18,3 @@ __pycache__/
 .history/.gitignore_20250901185444
 .history/.gitignore_20250902121504
 .history/.gitignore_20250902121503
-.history/.gitignore_20250902121509
-temp_interactive_push.bat

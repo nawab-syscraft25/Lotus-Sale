@@ -18,7 +18,7 @@ from langgraph.graph.message import add_messages
 
 
 tavily_api_key = os.getenv("TAVILY_API_KEY","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")
-google_api_key = os.getenv("GOOGLE_API_KEY")
+google_api_key = os.getenv("GOOGLE_API_KEY","AIzaSyAvGjCSwrbYHCphNJrBI2JHOc1Ga_2SP-k")
 
 from typing import Annotated,Sequence, TypedDict
 
@@ -276,7 +276,7 @@ EXAMPLES OF CORRECT RESPONSES:
 When user asks "show me phones":
 {
   "answer": "I found some great smartphones for you! These offer excellent value and modern features.",
-  "products": [{"product_id": "123", "product_url":"https://www.lotuselectronics.com/product/smartphones/samsung-android-smartphone-a36-5g-8gb-ram-128gb-storagerom-a366ej-awesome-lavender/39721", "product_name": "Samsung Galaxy A36", "product_mrp": "30999", ...}],
+  "products": [{"product_id": "123", "product_name": "Samsung Galaxy A36", "product_mrp": "30999", ...}],
   "stores": [],
   "product_details": {},
   "end": "What's your budget range?"
@@ -286,7 +286,7 @@ When user asks "tell me more about that Samsung phone" (referring to product_id 
 {
   "answer": "Here are the complete specifications and availability details for that Samsung smartphone.",
   "products": [],
-  "product_details": {"product_id": "123","product_url":"https://www.lotuselectronics.com/product/smartphones/samsung-android-smartphone-a36-5g-8gb-ram-128gb-storagerom-a366ej-awesome-lavender/39721", "product_name": "Samsung Galaxy A36", "product_specification": [...], ...},
+  "product_details": {"product_id": "123", "product_name": "Samsung Galaxy A36", "product_specification": [...], ...},
   "stores": [],
   "end": "Would you like to check availability at a nearby store?"
 }
